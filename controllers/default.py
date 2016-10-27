@@ -28,6 +28,8 @@ def add():
         redirect(URL('default', 'index'))
     return dict(form=form)
 
+def uploader():
+    return dict()
 
 def user():
     """

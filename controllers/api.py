@@ -15,8 +15,6 @@ def get_tracks():
                 artist = r.artist,
                 album = r.album,
                 title = r.title,
-                duration = r.duration,
-                rating = r.rating,
                 num_plays = r.num_plays,
             )
             tracks.append(t)

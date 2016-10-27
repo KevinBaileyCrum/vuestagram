@@ -1,0 +1,48 @@
+{{extend 'layout.html'}}
+
+<div class="main_content">
+
+    <div id="file_upload_region">
+      <form action="{{=URL('default', 'upload')}}" class="dropzone dz-clickable" id="file-uploader">
+        <div class="dz-message">
+          Drop files here to upload them, or click to select them.
+        </div>
+      </form>
+      <div class="container_buttons">
+        <button class="btn btn-default" id="save_later_button" style="display:none">Back</button>
+      </div>
+    </div>
+</div>
+
+{{block head}}
+<script src="{{=URL('static', 'js/dropzone.js')}}"></script>
+
+<script>
+$(function() {
+  var num_files = 0;
+  Dropzone.options.fileUploader = {
+    maxFilesize: 10, // MB
+    addRemoveLinks: true,
+    parallelUploads: 2,
+    createImageThumbnails: false,
+    dictRemoveFile: "Remove",
+    init: function() {
+      this.on("removedfile", function(file) {
+        num_files -= 1;
+        if (file.processing) {
+          $.ajax({
+            url: "{{=URL('default', 'remove')}}",
+            method: "POST",
+            data: {name: file.name}
+          });
+        }
+      });
+      this.on("addedfile", function(file) {
+        num_files += 1;
+      });
+      this.on("queuecomplete", function() {
+      });
+    }
+  }
+});
+</script>

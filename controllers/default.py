@@ -40,7 +40,7 @@ def purchase():
     # Creates the charge.
     import stripe
     # Your secret key.
-    stripe.api_key = "sk_test_pZ4tD6Pq0VuUCkSyXJ6Feb2T"
+    stripe.api_key = myconf.get('stripe.private_key')
     token = json.loads(request.vars.transaction_token)
     amount = float(request.vars.amount)
     try:

@@ -18,7 +18,7 @@ def get_products():
     """Gets the list of products, possibly in response to a query."""
     t = request.vars.q.strip()
     if request.vars.q:
-        q = ((db.product.name.contains(t)) |
+        q = ((db.product.product_name.contains(t)) |
              (db.product.description.contains(t)))
     else:
         q = db.product.id > 0

@@ -7,3 +7,15 @@
 div.main_content {
   padding: 10px;
 }
+
+/* line 9, ../sass/_main.scss */
+div.result_table {
+  width: 100%;
+}
+
+/* line 12, ../sass/_main.scss */
+table.track_table {
+  width: 100%;
+  margin-top: 10px;
+  margin-bottom: 10px;
+}

@@ -21,6 +21,14 @@ def index():
     return dict(message=T('Welcome to web2py!'))
 
 
+def add():
+    """This is a temporary function to allow users to easily add tracks, mainly for testing."""
+    form = SQLFORM(db.track)
+    if form.process().accepted:
+        redirect(URL('default', 'index'))
+    return dict(form=form)
+
+
 def user():
     """
     exposes:

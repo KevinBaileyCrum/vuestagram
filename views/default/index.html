@@ -9,9 +9,14 @@
 
 <div class="main_content">
 
-    <div id="vue-div" class="display:none">
-        <!-- Your code goes here.  Remember to call $("#vue-div").show() once you get the data for the first time. -->
-    </div>
+  <!-- For the moment, we use a separate page to add tracks to the database. -->
+  {{if auth.user is not None:}}
+    <a href="{{=URL('default', 'add')}}" class="btn rounded"><i class="fa fa-plus"></i> Add Track</a>
+  {{pass}}
+
+  <div id="vue-div" class="display:none">
+    <!-- Your code goes here.  Remember to call $("#vue-div").show() once you get the data for the first time. -->
+  </div>
 
 </div>
 

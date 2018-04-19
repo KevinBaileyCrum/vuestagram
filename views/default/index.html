@@ -16,6 +16,38 @@
 
   <div id="vue-div" class="display:none">
     <!-- Your code goes here.  Remember to call $("#vue-div").show() once you get the data for the first time. -->
+
+    <!-- Code to display the table of tracks -->
+    <div class="result_table">
+      <table>
+        <thead>
+        <tr>
+          <th></th>
+          <th>Artist</th>
+          <th>Album</th>
+          <th>Track</th>
+          <th>N Plays</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr v-for="track in tracks">
+          <td></td>
+          <td>${track.artist}</td>
+          <td>${track.album}</td>
+          <td>${track.title}</td>
+          <td>${track.num_plays}</td>
+        </tr>
+        </tbody>
+      </table>
+      <div v-if="has_more" class="show_more">
+        <button class="btn btn-default rounded" v-on:click="get_more()">
+          <i class="fa fa-ellipsis-h"></i>
+          Load more
+        </button>
+      </div>
+    </div>
+
+
   </div>
 
 </div>

@@ -76,7 +76,7 @@
           <td>${track.album}</td>
           <td>${track.title}</td>
           <td>${track.num_plays}</td>
-          <td><i class="fa fa-trash-o" v-on:click="delete_track(track.id)"></i></td>
+          <td><i class="fa fa-trash-o" v-on:click="delete_track(track._idx)"></i></td>
         </tr>
         </tbody>
       </table>

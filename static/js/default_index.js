@@ -13,6 +13,9 @@ var app = function() {
         }
     };
 
+    // Enumerates an array.
+    var enumerate = function(v) { var k=0; return v.map(function(e) {e._idx = k++;});};
+
     function get_tracks_url(start_idx, end_idx) {
         var pp = {
             start_idx: start_idx,
@@ -26,6 +29,7 @@ var app = function() {
             self.vue.tracks = data.tracks;
             self.vue.has_more = data.has_more;
             self.vue.logged_in = data.logged_in;
+            enumerate(self.vue.tracks);
         })
     };
 
@@ -34,6 +38,7 @@ var app = function() {
         $.getJSON(get_tracks_url(num_tracks, num_tracks + 10), function (data) {
             self.vue.has_more = data.has_more;
             self.extend(self.vue.tracks, data.tracks);
+            enumerate(self.vue.tracks);
         });
     };
 
@@ -54,27 +59,16 @@ var app = function() {
             function (data) {
                 $.web2py.enableElement($("#add_track_submit"));
                 self.vue.tracks.unshift(data.track);
+                enumerate(self.vue.tracks);
             });
     };
 
-    self.delete_track = function(track_id) {
+    self.delete_track = function(track_idx) {
         $.post(del_track_url,
-            {
-                track_id: track_id
-            },
+            { track_id: self.vue.tracks[track_idx].id },
             function () {
-                var idx = null;
-                for (var i = 0; i < self.vue.tracks.length; i++) {
-                    if (self.vue.tracks[i].id === track_id) {
-                        // If I set this to i, it won't work, as the if below will
-                        // return false for items in first position.
-                        idx = i + 1;
-                        break;
-                    }
-                }
-                if (idx) {
-                    self.vue.tracks.splice(idx - 1, 1);
-                }
+                self.vue.tracks.splice(track_idx, 1);
+                enumerate(self.vue.tracks);
             }
         )
     };

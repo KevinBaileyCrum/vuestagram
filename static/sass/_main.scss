@@ -17,4 +17,7 @@ table.track_table {
 
 button:disabled {
   background-color: lightgray;
+  &:hover {
+    box-shadow: none;
+  }
 }

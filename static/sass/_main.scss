@@ -29,4 +29,7 @@ td.play_selector {
 div.music_controller {
   width: 100%;
   margin-bottom: 20px;
+  audio {
+    width: 100%;
+  }
 }

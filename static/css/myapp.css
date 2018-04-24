@@ -39,6 +39,10 @@ div.music_controller {
   width: 100%;
   margin-bottom: 20px;
 }
+/* line 32, ../sass/_main.scss */
+div.music_controller audio {
+  width: 100%;
+}
 
 /* line 1, ../sass/_navbar.scss */
 .navbar-inverse {

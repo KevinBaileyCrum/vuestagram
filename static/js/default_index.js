@@ -18,7 +18,7 @@ var app = function() {
             start_idx: start_idx,
             end_idx: end_idx
         };
-        return "/start/api/get_tracks" + "?" + $.param(pp);
+        return tracks_url + "?" + $.param(pp);
     }
 
     self.get_tracks = function () {
@@ -37,17 +37,45 @@ var app = function() {
         });
     };
 
+    self.add_track_button = function () {
+        // The button to add a track has been pressed.
+        self.vue.is_adding_track = !self.vue.is_adding_track;
+    };
+
+    self.add_track = function () {
+        // The submit button to add a track has been added.
+        $.post(add_track_url,
+            {
+                artist: self.vue.form_artist,
+                title: self.vue.form_track,
+                album: self.vue.form_album,
+                duration: self.vue.form_duration
+            },
+            function (data) {
+                $.web2py.enableElement($("#add_track_submit"));
+                self.vue.tracks.unshift(data.track);
+            });
+    };
+
     self.vue = new Vue({
         el: "#vue-div",
         delimiters: ['${', '}'],
         unsafeDelimiters: ['!{', '}'],
         data: {
+            is_adding_track: false,
             tracks: [],
             logged_in: false,
-            has_more: false
+            has_more: false,
+            form_artist: null,
+            form_track: null,
+            form_album: null
+
         },
         methods: {
-            get_more: self.get_more
+            get_more: self.get_more,
+            add_track_button: self.add_track_button,
+            add_track: self.add_track
+
         }
 
     });

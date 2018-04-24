@@ -73,6 +73,17 @@ var app = function() {
         )
     };
 
+    self.select_track = function(track_id) {
+        if (self.vue.selected_id === track_id) {
+            // Deselect track.
+            self.vue.selected_id = -1;
+        } else {
+            // Select it.
+            self.vue.selected_id = track_id;
+        }
+    };
+
+
 
     self.vue = new Vue({
         el: "#vue-div",
@@ -85,14 +96,15 @@ var app = function() {
             has_more: false,
             form_artist: null,
             form_track: null,
-            form_album: null
-
+            form_album: null,
+            selected_id: -1  // Track selected to play.
         },
         methods: {
             get_more: self.get_more,
             add_track_button: self.add_track_button,
             add_track: self.add_track,
-            delete_track: self.delete_track
+            delete_track: self.delete_track,
+            select_track: self.select_track
         }
 
     });

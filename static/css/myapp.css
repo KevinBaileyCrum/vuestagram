@@ -29,6 +29,11 @@ button:disabled:hover {
   box-shadow: none;
 }
 
+/* line 25, ../sass/_main.scss */
+td.play_selector {
+  width: 20px;
+}
+
 /* line 1, ../sass/_navbar.scss */
 .navbar-inverse {
   background-color: #dddddd;

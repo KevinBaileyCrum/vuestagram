@@ -41,12 +41,14 @@ def add_track():
 
 @auth.requires_signature()
 def del_track():
+    "Deletes a track from the table"
     db(db.track.id == request.vars.track_id).delete()
     return "ok"
 
 # NOTE that we cannot hash the variables, otherwise we cannot produce the URL server-side.
 @auth.requires_signature(hash_vars=False)
 def upload_track():
+    "Uploads the file related to a track"
     logger.info("_signature: %r", request.vars._signature)
     track_id = int(request.vars.track_id)
     logger.info("Track id: %r", request.vars.track_id)
@@ -62,4 +64,10 @@ def upload_track():
         data_blob=request.vars.file.file.read(),
         mime_type=request.vars.file.type,
     )
+    return "ok"
+
+@auth.requires_signature()
+def delete_music():
+    """Deletes the file associated with a track"""
+    db(db.track_data.track_id == request.vars.track_id).delete()
     return "ok"

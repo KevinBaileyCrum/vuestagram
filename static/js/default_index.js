@@ -90,12 +90,18 @@ var app = function() {
         } else {
             // Also sets properly the attribute of the upload form.
             self.upload_url = upload_url + "&" + $.param({track_id: track.id});
-            self.delete_file_url = delete_file_url + "&" + $.param({track_id: track.id});
             $("#uploader_div").show();
         }
 
     };
 
+    self.delete_uploaded_track = function() {
+        $.post(
+            delete_file_url,
+            {track_id: self.vue.track_id},
+            function () {}
+        )
+    };
 
 
     self.vue = new Vue({

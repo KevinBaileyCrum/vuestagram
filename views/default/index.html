@@ -9,7 +9,7 @@
   var del_track_url = "{{=URL('api', 'del_track', user_signature=True)}}";
   var upload_url = "{{=URL('api', 'upload_track', user_signature=True, hash_vars=False)}}";
   var play_url = "{{=URL('api', 'play_track')}}";
-  var delete_file_url = "{{=URL('api', 'delete_music', user_signature=True, hash_vars=False)}}";
+  var delete_file_url = "{{=URL('api', 'delete_music', user_signature=True)}}";
 </script>
 
 <script src="{{=URL('static', 'js/dropzone.js')}}"></script>
@@ -25,11 +25,18 @@ $(function() {
     url: produce_upload_url,
     addRemoveLinks: true,
     parallelUploads: 1,
-    maxFiles: 1,
     acceptedFiles: 'audio/*',
     createImageThumbnails: false,
     init: function() {
       this.on("queuecomplete", function() {});
+      this.on("removedfile", function() {
+          APP.delete_uploaded_track();
+      });
+//      this.on("addedfile", function() {
+//        if (this.files.length > 0) {
+//          this.removeFile(this.files[0]);
+//        }
+//      });
     }
   }
 });

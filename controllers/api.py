@@ -98,3 +98,10 @@ def play_track():
     f.write(t.data_blob)
     f.seek(0) # Rewind.
     return response.stream(f.name, chunk_size=4096, request=request)
+
+@auth.requires_signature()
+def inc_plays():
+    track_id = int(request.vars.track_id)
+    t = db.track[track_id]
+    t.update_record(num_plays = t.num_plays + 1)
+    return "ok"

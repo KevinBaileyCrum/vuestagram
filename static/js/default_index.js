@@ -84,15 +84,26 @@ var app = function() {
             self.vue.selected_id = track.id;
             self.vue.selected_url = track.track_url;
         }
-        // Shows the uploader if we don't have a track url.
         if (self.vue.selected_url && self.vue.selected_id > -1) {
+            // We play the track.
+            self.inc_play_track(track_idx);
             $("#uploader_div").hide();
         } else {
+            // Shows the uploader if we don't have a track url.
             // Also sets properly the attribute of the upload form.
             self.upload_url = upload_url + "&" + $.param({track_id: track.id});
             $("#uploader_div").show();
         }
+    };
 
+    self.inc_play_track = function (track_idx) {
+        var track = self.vue.tracks[track_idx];
+        track.num_plays += 1;
+        $.post(
+            inc_plays_url,
+            {track_id: track.id},
+            function () {}
+        )
     };
 
     self.delete_uploaded_track = function() {

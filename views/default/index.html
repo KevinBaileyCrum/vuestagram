@@ -10,6 +10,7 @@
   var upload_url = "{{=URL('api', 'upload_track', user_signature=True, hash_vars=False)}}";
   var play_url = "{{=URL('api', 'play_track')}}";
   var delete_file_url = "{{=URL('api', 'delete_music', user_signature=True)}}";
+  var inc_plays_url = "{{=URL('api', 'inc_plays', user_signature=True)}}";
 </script>
 
 <script src="{{=URL('static', 'js/dropzone.js')}}"></script>
@@ -66,7 +67,7 @@ $(function() {
         </audio>
       </div>
     </div>
-    
+
     <!-- Form to add tracks -->
     <div v-if="is_adding_track" id="add_track_div">
       <form action="#" v-on:submit.prevent class="form-horizontal" enctype="multipart/form-data" method="post">

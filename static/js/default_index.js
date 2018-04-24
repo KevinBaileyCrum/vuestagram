@@ -73,13 +73,6 @@ var app = function() {
         )
     };
 
-        self.select_track = function(track_idx) {
-        var track = self.vue.tracks[track_idx];
-        self.vue.selected_idx = track_idx;
-        self.vue.selected_id = track.id;
-        self.vue.selected_url = track.track_url;
-    };
-
     self.select_track = function(track_idx) {
         var track = self.vue.tracks[track_idx];
         if (self.vue.selected_id === track.id) {
@@ -95,6 +88,8 @@ var app = function() {
         if (self.vue.selected_url && self.vue.selected_id > -1) {
             $("#uploader_div").hide();
         } else {
+            // Also sets properly the attribute of the upload form.
+            $("#file-uploader").attr("action", upload_url + "?" + $.param({track_id: track.id}));
             $("#uploader_div").show();
         }
 

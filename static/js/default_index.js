@@ -90,7 +90,7 @@ var app = function() {
         } else {
             // Also sets properly the attribute of the upload form.
             self.upload_url = upload_url + "&" + $.param({track_id: track.id});
-            self.delete_file_url = delete_file_url + "?" + $.param({track_id: track.id});
+            self.delete_file_url = delete_file_url + "&" + $.param({track_id: track.id});
             $("#uploader_div").show();
         }
 
@@ -133,3 +133,4 @@ var APP = null;
 // This will make everything accessible from the js console;
 // for instance, self.x above would be accessible as APP.x
 jQuery(function(){APP = app();});
+

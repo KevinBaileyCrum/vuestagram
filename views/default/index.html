@@ -1,18 +1,71 @@
 {{extend 'layout.html'}}
 
 {{block head}}
+
 <script src="{{=URL('static', 'js/vue.js')}}"></script>
 <script>
   var tracks_url = "{{=URL('api', 'get_tracks')}}";
   var add_track_url = "{{=URL('api', 'add_track', user_signature=True)}}";
   var del_track_url = "{{=URL('api', 'del_track', user_signature=True)}}";
 </script>
+
+<script src="{{=URL('static', 'js/dropzone.js')}}"></script>
+
+<script>
+$(function() {
+  var num_files = 0;
+  Dropzone.options.fileUploader = {
+    maxFilesize: 10, // MB
+    addRemoveLinks: true,
+    parallelUploads: 2,
+    createImageThumbnails: false,
+    dictRemoveFile: "Remove",
+    init: function() {
+      this.on("removedfile", function(file) {
+        num_files -= 1;
+        if (file.processing) {
+          $.ajax({
+            url: "{{=URL('default', 'remove')}}",
+            method: "POST",
+            data: {name: file.name}
+          });
+        }
+      });
+      this.on("addedfile", function(file) {
+        num_files += 1;
+      });
+      this.on("queuecomplete", function() {
+      });
+    }
+  }
+});
+</script>
+
 {{end}}
 
 <div class="main_content">
 
+  <!-- Dropzone uploader. This unfortunately cannot go into the Vue div -->
+  <div id="uploader_div" style="display:none">
+    <form action="{{=URL('default', 'upload')}}" class="dropzone dz-clickable" id="file-uploader">
+      <div class="dz-message">
+        Drop files here to upload them, or click to select them.
+      </div>
+    </form>
+  </div>
+
   <div id="vue-div" class="display:none">
     <!-- Your code goes here.  Remember to call $("#vue-div").show() once you get the data for the first time. -->
+
+    <!-- Music player -->
+    <div v-if="selected_id >= 0" class="music_controller">
+      <div v-if="selected_url">
+        I have music
+      </div>
+      <div v-if="!selected_url">
+        No music
+      </div>
+    </div>
 
     <!-- Buttons -->
     <div class="button_bar">
@@ -27,9 +80,6 @@
       </button>
     </div>
 
-    <div class="music_controller">
-
-    </div>
 
     <!-- Form to add tracks -->
     <div v-if="is_adding_track" id="add_track_div">
@@ -75,7 +125,7 @@
         </thead>
         <tbody>
         <tr v-for="track in tracks">
-          <td class="play_selector"><i class="fa" v-on:click="select_track(track.id)" v-bind:class="{'fa-volume-up': track.id == selected_id, 'fa-volume-off': !(track.id == selected_id)}"></i></td>
+          <td class="play_selector"><i class="fa" v-on:click="select_track(track._idx)" v-bind:class="{'fa-volume-up': track.id == selected_id, 'fa-volume-off': !(track.id == selected_id)}"></i></td>
           <td>${track.artist}</td>
           <td>${track.album}</td>
           <td>${track.title}</td>

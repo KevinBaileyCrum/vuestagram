@@ -73,13 +73,23 @@ var app = function() {
         )
     };
 
-    self.select_track = function(track_id) {
-        if (self.vue.selected_id === track_id) {
+        self.select_track = function(track_idx) {
+        var track = self.vue.tracks[track_idx];
+        self.vue.selected_idx = track_idx;
+        self.vue.selected_id = track.id;
+        self.vue.selected_url = track.track_url;
+    };
+
+    self.select_track = function(track_idx) {
+        var track = self.vue.tracks[track_idx];
+        if (self.vue.selected_id === track.id) {
             // Deselect track.
             self.vue.selected_id = -1;
         } else {
             // Select it.
-            self.vue.selected_id = track_id;
+            self.vue.selected_idx = track_idx;
+            self.vue.selected_id = track.id;
+            self.vue.selected_url = track.track_url;
         }
     };
 

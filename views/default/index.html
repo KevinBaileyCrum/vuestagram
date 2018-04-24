@@ -32,11 +32,11 @@ $(function() {
       this.on("removedfile", function() {
           APP.delete_uploaded_track();
       });
-//      this.on("addedfile", function() {
-//        if (this.files.length > 0) {
-//          this.removeFile(this.files[0]);
-//        }
-//      });
+      this.on("addedfile", function() {
+        if (this.files.length > 1) {
+          this.removeFile(this.files[0]);
+        }
+      });
     }
   }
 });

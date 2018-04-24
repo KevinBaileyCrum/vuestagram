@@ -1,3 +1,5 @@
+import tempfile
+
 # Here go your api methods.
 
 # Let us have a serious implementation now.
@@ -10,13 +12,17 @@ def get_tracks():
     rows = db().select(db.track.ALL, limitby=(start_idx, end_idx + 1))
     for i, r in enumerate(rows):
         if i < end_idx - start_idx:
+            # Check if I have a track or not.
+            track_url = (
+                URL('api', 'play_track', vars=dict(track_id=r.id), user_signature=True)
+                if r.has_track else None)
             t = dict(
                 id = r.id,
                 artist = r.artist,
                 album = r.album,
                 title = r.title,
                 num_plays = r.num_plays,
-                track_url = None,
+                track_url = track_url,
             )
             tracks.append(t)
         else:
@@ -64,10 +70,31 @@ def upload_track():
         data_blob=request.vars.file.file.read(),
         mime_type=request.vars.file.type,
     )
+    db(db.track.id == track_id).update(has_track=True)
     return "ok"
 
 @auth.requires_signature()
 def delete_music():
     """Deletes the file associated with a track"""
-    db(db.track_data.track_id == request.vars.track_id).delete()
+    track_id = request.vars.track_id
+    if track_id is None:
+        raise HTTP(500)
+    db(db.track_data.track_id == track_id).delete()
+    db(db.track.id == track_id).update(has_track=False)
     return "ok"
+
+@auth.requires_signature()
+def play_track():
+    track_id = int(request.vars.track_id)
+    t = db(db.track_data.track_id == track_id).select().first()
+    if t is None:
+        return HTTP(404)
+    headers = {}
+    headers['Content-Type'] = t.mime_type
+    # Web2py is setup to stream a file, not a data blob.
+    # So we create a temporary file and we stream it.
+    # f = tempfile.TemporaryFile()
+    f = tempfile.NamedTemporaryFile()
+    f.write(t.data_blob)
+    f.seek(0) # Rewind.
+    return response.stream(f.name, chunk_size=4096, request=request)

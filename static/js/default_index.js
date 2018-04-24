@@ -57,6 +57,29 @@ var app = function() {
             });
     };
 
+    self.delete_track = function(track_id) {
+        $.post(del_track_url,
+            {
+                track_id: track_id
+            },
+            function () {
+                var idx = null;
+                for (var i = 0; i < self.vue.tracks.length; i++) {
+                    if (self.vue.tracks[i].id === track_id) {
+                        // If I set this to i, it won't work, as the if below will
+                        // return false for items in first position.
+                        idx = i + 1;
+                        break;
+                    }
+                }
+                if (idx) {
+                    self.vue.tracks.splice(idx - 1, 1);
+                }
+            }
+        )
+    };
+
+
     self.vue = new Vue({
         el: "#vue-div",
         delimiters: ['${', '}'],
@@ -74,8 +97,8 @@ var app = function() {
         methods: {
             get_more: self.get_more,
             add_track_button: self.add_track_button,
-            add_track: self.add_track
-
+            add_track: self.add_track,
+            delete_track: self.delete_track
         }
 
     });

@@ -2,6 +2,11 @@ import tempfile
 
 # Here go your api methods.
 
+# To do:
+# Form checking (check that the form is not empty when a new track is added)
+# User checking
+# Sharing
+
 # Let us have a serious implementation now.
 
 def get_tracks():

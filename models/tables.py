@@ -21,6 +21,12 @@ db.define_table('track',
                 Field('created_on', default=datetime.datetime.utcnow()),
                 )
 
+db.define_table('track_data',
+                Field('track_id', 'reference track'),
+                Field('original_filename'),
+                Field('data_blob', 'blob'),
+                Field('mime_type'),
+                )
 
 # after defining tables, uncomment below to enable auditing
 # auth.enable_record_versioning(db)

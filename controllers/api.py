@@ -43,3 +43,23 @@ def add_track():
 def del_track():
     db(db.track.id == request.vars.track_id).delete()
     return "ok"
+
+# NOTE that we cannot hash the variables, otherwise we cannot produce the URL server-side.
+@auth.requires_signature(hash_vars=False)
+def upload_track():
+    logger.info("_signature: %r", request.vars._signature)
+    track_id = int(request.vars.track_id)
+    logger.info("Track id: %r", request.vars.track_id)
+    # If I already have music for that track, delete it.
+    db(db.track_data.track_id == track_id).delete()
+    # Reads the bytes of the track.
+    logger.info("Uploaded a file of type %r" % request.vars.file.type)
+    if not request.vars.file.type.startswith('audio'):
+        raise HTTP(500)
+    db.track_data.insert(
+        track_id=track_id,
+        original_filename=request.vars.file.filename,
+        data_blob=request.vars.file.file.read(),
+        mime_type=request.vars.file.type,
+    )
+    return "ok"

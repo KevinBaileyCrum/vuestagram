@@ -7,36 +7,28 @@
   var tracks_url = "{{=URL('api', 'get_tracks')}}";
   var add_track_url = "{{=URL('api', 'add_track', user_signature=True)}}";
   var del_track_url = "{{=URL('api', 'del_track', user_signature=True)}}";
-  var upload_url = "{{=URL('api', 'upload_track')}}";
+  var upload_url = "{{=URL('api', 'upload_track', user_signature=True, hash_vars=False)}}";
+  var play_url = "{{=URL('api', 'play_track')}}";
+  var delete_file_url = "{{=URL('api', 'delete_music')}}";
 </script>
 
 <script src="{{=URL('static', 'js/dropzone.js')}}"></script>
 
 <script>
+function produce_upload_url (files) {
+    return APP.upload_url;
+}
+
 $(function() {
-  var num_files = 0;
   Dropzone.options.fileUploader = {
-    maxFilesize: 10, // MB
+    maxFilesize: 40, // MB
+    url: produce_upload_url,
     addRemoveLinks: true,
-    parallelUploads: 2,
+    parallelUploads: 1,
+    acceptedFiles: 'audio/*',
     createImageThumbnails: false,
-    dictRemoveFile: "Remove",
     init: function() {
-      this.on("removedfile", function(file) {
-        num_files -= 1;
-        if (file.processing) {
-          $.ajax({
-            url: "{{=URL('default', 'remove')}}",
-            method: "POST",
-            data: {name: file.name}
-          });
-        }
-      });
-      this.on("addedfile", function(file) {
-        num_files += 1;
-      });
-      this.on("queuecomplete", function() {
-      });
+      this.on("queuecomplete", function() {});
     }
   }
 });
@@ -48,7 +40,7 @@ $(function() {
 
   <!-- Dropzone uploader. This unfortunately cannot go into the Vue div -->
   <div id="uploader_div" style="display:none">
-    <form action="{{=URL('default', 'upload')}}" class="dropzone dz-clickable" id="file-uploader">
+    <form action="" class="dropzone dz-clickable" id="file-uploader">
       <div class="dz-message">
         Drop files here to upload them, or click to select them.
       </div>

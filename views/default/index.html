@@ -66,24 +66,10 @@ $(function() {
         </audio>
       </div>
     </div>
-
-    <!-- Buttons -->
-    <div class="button_bar">
-      <button v-if="!is_adding_track" class="btn"
-              v-on:click="add_track_button()"
-              :disabled="!logged_in"
-              v-bind:class="{'disabled': !logged_in}">
-        <i class="fa fa-plus"></i> Add track
-      </button>
-      <button v-if="is_adding_track" class="btn " v-on:click="add_track_button()">
-      <i class="fa fa-times"></i> Close
-      </button>
-    </div>
-
-
+    
     <!-- Form to add tracks -->
     <div v-if="is_adding_track" id="add_track_div">
-      <form action="#" v-on:submit.prevent="add_track" class="form-horizontal" enctype="multipart/form-data" method="post">
+      <form action="#" v-on:submit.prevent class="form-horizontal" enctype="multipart/form-data" method="post">
         <div class="form-group" id="no_table_artist__row">
           <div>
             <input class="form-control string" id="no_table_artist" v-model="form_artist" placeholder="Artist" type="text" />
@@ -101,12 +87,23 @@ $(function() {
             <span class="help-block"></span>
           </div>
         </div>
-        <div class="form-group" id="submit_record__row">
-          <div>
-            <input class="btn btn-primary" id="add_track_submit" type="submit" value="Submit" />
-          </div>
-        </div>
       </form>
+    </div>
+
+    <!-- Buttons -->
+    <div class="button_bar">
+      <button v-if="!is_adding_track" class="btn"
+              v-on:click="add_track_button()"
+              :disabled="!logged_in"
+              v-bind:class="{'disabled': !logged_in}">
+        <i class="fa fa-plus"></i>
+      </button>
+      <button v-if="is_adding_track" class="btn red" v-on:click="add_track()">
+        <i class="fa fa-plus"></i> Add
+      </button>
+      <button v-if="is_adding_track" class="btn " v-on:click="add_track_button()">
+        <i class="fa fa-times"></i> Close
+      </button>
     </div>
 
 

@@ -10,7 +10,8 @@
   var upload_url = "{{=URL('api', 'upload_track', user_signature=True)}}";
   var play_url = "{{=URL('api', 'play_track')}}";
   var inc_plays_url = "{{=URL('api', 'inc_plays', user_signature=True)}}";
-  var get_insertion_id_url = "{{=URL('api', 'get_insertion_id', user_signature=True)}}"
+  var get_insertion_id_url = "{{=URL('api', 'get_insertion_id', user_signature=True)}}";
+  var cleanup_url = "{{=URL('api', 'cleanup', user_signature=True)}}";
 </script>
 
 <script src="{{=URL('static', 'js/dropzone.js')}}"></script>

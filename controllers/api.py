@@ -60,7 +60,7 @@ def add_track():
     # Then, updates the uploaded track to point to this track.
     db(db.track_data.id == request.vars.insertion_id).update(track_id=t_id)
     # Also, to clean up, remove tracks that do not belong to anyone.
-    db(db.track_data.id == None).delete()
+    db(db.track_data.track_id == None).delete()
     # Returns the track info.  Building the dict should likely be done in
     # a shared function, but oh well.
     return response.json(dict(track=dict(
@@ -76,6 +76,8 @@ def add_track():
 def del_track():
     "Deletes a track from the table"
     db(db.track.id == request.vars.track_id).delete()
+    # The next line is likely useless, as this is taken care by SQL deletion cascading.
+    db(db.track_data.track_id == request.vars.track_id).delete()
     return "ok"
 
 # NOTE that we cannot hash the variables, otherwise we cannot produce the URL server-side.
@@ -100,6 +102,12 @@ def upload_track():
     return response.json(dict(
         insertion_id=insertion_id
     ))
+
+@auth.requires_signature()
+def cleanup():
+    """Removes incomplete uploads."""
+    db(db.track_data.track_id == None).delete()
+
 
 @auth.requires_signature()
 def delete_music():

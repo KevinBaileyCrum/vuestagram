@@ -35,15 +35,6 @@ var app = function() {
         })
     };
 
-    self.upload_complete = function (response) {
-        // Notes the insertion id.
-        self.insertion_id = response.insertion_id;
-        // Moves to entering the track info: displays the form, rather than the uploader.
-        self.vue.is_adding_track_info = true;
-        self.vue.is_adding_track = false;
-        $("div#uploader_div").hide();
-    };
-
     self.get_more = function () {
         var num_tracks = self.vue.tracks.length;
         $.getJSON(get_tracks_url(num_tracks, num_tracks + 10), function (data) {
@@ -54,14 +45,27 @@ var app = function() {
     };
 
     self.add_track_button = function () {
+        // This button is used to start the add of a new track; begins with upload.
         // Show the Dropzone plugin.
         $("div#uploader_div").show();
         // The button to add a track has been pressed.
         self.vue.is_adding_track = true;
     };
 
+    self.upload_complete = function (response) {
+        // This callback is called when the insertion of the track completes.
+        // The next step will be to get the track info (artist, album, etc).
+        // Notes the insertion id.
+        self.insertion_id = response.insertion_id;
+        // Moves to entering the track info: displays the form, rather than the uploader.
+        self.vue.is_adding_track_info = true;
+        self.vue.is_adding_track = false;
+        $("div#uploader_div").hide();
+    };
+
     self.add_track = function () {
         // Submits the track info.
+        // This is the last step of the track insertion process.
         $.post(add_track_url,
             {
                 artist: self.vue.form_artist,
@@ -92,7 +96,7 @@ var app = function() {
         self.vue.is_adding_track_info = false;
         self.vue.is_adding_track = false;
         $("div#uploader_div").hide();
-        // TODO: call server to clean up.
+        $.post(cleanup_url); // Cleans up any incomplete uploads.
     };
 
     self.select_track = function(track_idx) {

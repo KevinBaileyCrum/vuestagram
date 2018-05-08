@@ -15,6 +15,7 @@ from gluon.utils import web2py_uuid
 def build_track_url(i):
     return URL('api', 'play_track', vars=dict(track_id=i), user_signature=True)
 
+@auth.requires_signature()
 def get_tracks():
     start_idx = int(request.vars.start_idx) if request.vars.start_idx is not None else 0
     end_idx = int(request.vars.end_idx) if request.vars.end_idx is not None else 0

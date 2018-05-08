@@ -7,37 +7,33 @@
   var tracks_url = "{{=URL('api', 'get_tracks')}}";
   var add_track_url = "{{=URL('api', 'add_track', user_signature=True)}}";
   var del_track_url = "{{=URL('api', 'del_track', user_signature=True)}}";
-  var upload_url = "{{=URL('api', 'upload_track', user_signature=True, hash_vars=False)}}";
+  var upload_url = "{{=URL('api', 'upload_track', user_signature=True)}}";
   var play_url = "{{=URL('api', 'play_track')}}";
-  var delete_file_url = "{{=URL('api', 'delete_music', user_signature=True)}}";
   var inc_plays_url = "{{=URL('api', 'inc_plays', user_signature=True)}}";
+  var get_insertion_id_url = "{{=URL('api', 'get_insertion_id', user_signature=True)}}"
 </script>
 
 <script src="{{=URL('static', 'js/dropzone.js')}}"></script>
 
 <script>
-function produce_upload_url (files) {
-    return APP.upload_url;
-}
-
 $(function() {
   Dropzone.options.fileUploader = {
     maxFilesize: 40, // MB
-    url: produce_upload_url,
-    addRemoveLinks: true,
+    url: upload_url,
+    addRemoveLinks: false,
     parallelUploads: 1,
     acceptedFiles: 'audio/*',
     createImageThumbnails: false,
     init: function() {
-      this.on("queuecomplete", function() {});
-      this.on("removedfile", function() {
-          APP.delete_uploaded_track();
-      });
       this.on("addedfile", function() {
         if (this.files.length > 1) {
           this.removeFile(this.files[0]);
         }
       });
+      this.on("success", function(file, response) {
+          APP.upload_complete(response);
+          this.removeAllFiles();
+      })
     }
   }
 });
@@ -69,7 +65,7 @@ $(function() {
     </div>
 
     <!-- Form to add tracks -->
-    <div v-if="is_adding_track" id="add_track_div">
+    <div v-if="is_adding_track_info" id="add_track_div">
       <form action="#" v-on:submit.prevent class="form-horizontal" enctype="multipart/form-data" method="post">
         <div class="form-group" id="no_table_artist__row">
           <div>
@@ -93,17 +89,17 @@ $(function() {
 
     <!-- Buttons -->
     <div class="button_bar">
-      <button v-if="!is_adding_track" class="btn"
+      <button v-if="!is_adding_track && !is_adding_track_info" class="btn"
               v-on:click="add_track_button()"
               :disabled="!logged_in"
               v-bind:class="{'disabled': !logged_in}">
-        <i class="fa fa-plus"></i>
+        <i class="fa fa-plus"></i> Add Track
       </button>
-      <button v-if="is_adding_track" class="btn red" v-on:click="add_track()">
+      <button v-if="is_adding_track_info" class="btn red" v-on:click="add_track()">
         <i class="fa fa-plus"></i> Add
       </button>
-      <button v-if="is_adding_track" class="btn " v-on:click="add_track_button()">
-        <i class="fa fa-times"></i> Close
+      <button v-if="is_adding_track_info || is_adding_track" class="btn " v-on:click="cancel_add_track()">
+        <i class="fa fa-times"></i> Cancel
       </button>
     </div>
 

@@ -16,6 +16,8 @@ var app = function() {
     // Enumerates an array.
     var enumerate = function(v) { var k=0; return v.map(function(e) {e._idx = k++;});};
 
+    self.insertion_id = null; // Initialization.
+
     function get_tracks_url(start_idx, end_idx) {
         var pp = {
             start_idx: start_idx,
@@ -33,6 +35,15 @@ var app = function() {
         })
     };
 
+    self.upload_complete = function (response) {
+        // Notes the insertion id.
+        self.insertion_id = response.insertion_id;
+        // Moves to entering the track info: displays the form, rather than the uploader.
+        self.vue.is_adding_track_info = true;
+        self.vue.is_adding_track = false;
+        $("div#uploader_div").hide();
+    };
+
     self.get_more = function () {
         var num_tracks = self.vue.tracks.length;
         $.getJSON(get_tracks_url(num_tracks, num_tracks + 10), function (data) {
@@ -43,21 +54,25 @@ var app = function() {
     };
 
     self.add_track_button = function () {
+        // Show the Dropzone plugin.
+        $("div#uploader_div").show();
         // The button to add a track has been pressed.
-        self.vue.is_adding_track = !self.vue.is_adding_track;
+        self.vue.is_adding_track = true;
     };
 
     self.add_track = function () {
-        // The submit button to add a track has been added.
+        // Submits the track info.
         $.post(add_track_url,
             {
                 artist: self.vue.form_artist,
                 title: self.vue.form_track,
                 album: self.vue.form_album,
-                duration: self.vue.form_duration
+                insertion_id: self.insertion_id
             },
             function (data) {
                 $.web2py.enableElement($("#add_track_submit"));
+                self.vue.is_adding_track_info = false;
+                self.vue.is_adding_track = false;
                 self.vue.tracks.unshift(data.track);
                 enumerate(self.vue.tracks);
             });
@@ -71,6 +86,13 @@ var app = function() {
                 enumerate(self.vue.tracks);
             }
         )
+    };
+
+    self.cancel_add_track = function() {
+        self.vue.is_adding_track_info = false;
+        self.vue.is_adding_track = false;
+        $("div#uploader_div").hide();
+        // TODO: call server to clean up.
     };
 
     self.select_track = function(track_idx) {
@@ -87,12 +109,6 @@ var app = function() {
         if (self.vue.selected_url && self.vue.selected_id > -1) {
             // We play the track.
             self.inc_play_track(track_idx);
-            $("#uploader_div").hide();
-        } else {
-            // Shows the uploader if we don't have a track url.
-            // Also sets properly the attribute of the upload form.
-            self.upload_url = upload_url + "&" + $.param({track_id: track.id});
-            $("#uploader_div").show();
         }
     };
 
@@ -106,14 +122,6 @@ var app = function() {
         )
     };
 
-    self.delete_uploaded_track = function() {
-        $.post(
-            delete_file_url,
-            {track_id: self.vue.track_id},
-            function () {}
-        )
-    };
-
 
     self.vue = new Vue({
         el: "#vue-div",
@@ -121,6 +129,7 @@ var app = function() {
         unsafeDelimiters: ['!{', '}'],
         data: {
             is_adding_track: false,
+            is_adding_track_info: false,
             tracks: [],
             logged_in: false,
             has_more: false,
@@ -134,7 +143,8 @@ var app = function() {
             add_track_button: self.add_track_button,
             add_track: self.add_track,
             delete_track: self.delete_track,
-            select_track: self.select_track
+            select_track: self.select_track,
+            cancel_add_track: self.cancel_add_track
         }
 
     });

@@ -17,7 +17,6 @@ db.define_table('track',
                 Field('album'),
                 Field('title'),
                 Field('num_plays', 'integer'),
-                Field('has_track', 'boolean', default=False),
                 Field('created_by', default=get_user_email()),
                 Field('created_on', default=datetime.datetime.utcnow()),
                 )

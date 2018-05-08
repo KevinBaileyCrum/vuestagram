@@ -79,6 +79,9 @@ var app = function() {
                 self.vue.is_adding_track = false;
                 self.vue.tracks.unshift(data.track);
                 enumerate(self.vue.tracks);
+                self.vue.form_artist = "";
+                self.vue.form_track = "";
+                self.vue.form_album = "";
             });
     };
 

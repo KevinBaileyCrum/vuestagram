@@ -50,6 +50,7 @@ def get_insertion_id():
 
 @auth.requires_signature()
 def add_track():
+    """Received the metadata for a new track."""
     # Inserts the track information.
     t_id = db.track.insert(
         artist = request.vars.artist,

@@ -4,7 +4,7 @@
 
 <script src="{{=URL('static', 'js/vue.js')}}"></script>
 <script>
-  var tracks_url = "{{=URL('api', 'get_tracks')}}";
+  var tracks_url = "{{=URL('api', 'get_tracks', user_signature=True, hash_vars=False)}}";
   var add_track_url = "{{=URL('api', 'add_track', user_signature=True)}}";
   var del_track_url = "{{=URL('api', 'del_track', user_signature=True)}}";
   var upload_url = "{{=URL('api', 'upload_track', user_signature=True)}}";

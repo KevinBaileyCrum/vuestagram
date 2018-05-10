@@ -23,7 +23,7 @@ var app = function() {
             start_idx: start_idx,
             end_idx: end_idx
         };
-        return tracks_url + "?" + $.param(pp);
+        return tracks_url + "&" + $.param(pp);
     }
 
     self.get_tracks = function () {

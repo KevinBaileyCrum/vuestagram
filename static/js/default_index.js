@@ -66,7 +66,8 @@ var app = function() {
         delimiters: ['${', '}'],
         unsafeDelimiters: ['!{', '}'],
         data: {
-            is_uploading: false
+            is_uploading: false,
+            self_page: true // Leave it to true, so initially you are looking at your own images.
         },
         methods: {
             open_uploader: self.open_uploader,

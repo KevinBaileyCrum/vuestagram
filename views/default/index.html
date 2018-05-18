@@ -15,12 +15,38 @@
   <div id="vue-div" class="display:none">
     <!-- Your code goes here.  Remember to call $("#vue-div").show() once you get the data for the first time. -->
 
-    <div id="uploader_div" style="display:none">
-       Upload an image file: <input id="file_input" type="file" v-on:change="upload_file" accept="image/jpeg">
-    </div>
+    <div class="container padded">
 
-    <button v-if="!is_uploading" v-on:click="open_uploader">Add</button>
-    <button v-if="is_uploading"  v-on:click="close_uploader">Cancel</button>
+      <div class="image_space threequarters">
+        <!-- Left part of the page -->
+        <div v-if="self_page">
+          <!-- Code to upload files, with control buttons -->
+          <div id="uploader_div" style="display:none">
+            Upload an image file: <input id="file_input" type="file" v-on:change="upload_file" accept="image/jpeg">
+          </div>
+
+          <button v-if="!is_uploading" v-on:click="open_uploader">Add</button>
+          <button v-if="is_uploading"  v-on:click="close_uploader">Cancel</button>
+        </div>
+
+        <div class="image_container">
+          <!-- Put here the code to display the images -->
+        </div>
+      </div>
+
+      <div class="user_space quarter right">
+        <!-- Right part of the page -->
+        <table class="fill" id="user_selector">
+          <tbody>
+            <tr class="center">
+              <!-- This row is you; code for getting your own images, and for setting self_page -->
+              <td>Jane Doe</td>
+            </tr>
+            <!-- Then, one row for each person. -->
+          </tbody>
+        </table>
+
+      </div>
 
   </div>
 

@@ -9,39 +9,21 @@ div.main_content {
 }
 
 /* line 9, ../sass/_main.scss */
-div.result_table {
-  width: 100%;
+table#user_selector {
+  border: 1px solid gray;
+}
+/* line 11, ../sass/_main.scss */
+table#user_selector tbody tr {
+  border-bottom: 1px solid gray;
 }
 
-/* line 12, ../sass/_main.scss */
-table.track_table {
-  width: 100%;
-  margin-top: 10px;
-  margin-bottom: 10px;
-}
-
-/* line 18, ../sass/_main.scss */
+/* line 16, ../sass/_main.scss */
 button:disabled {
   background-color: lightgray;
 }
-/* line 20, ../sass/_main.scss */
+/* line 18, ../sass/_main.scss */
 button:disabled:hover {
   box-shadow: none;
-}
-
-/* line 25, ../sass/_main.scss */
-td.play_selector {
-  width: 20px;
-}
-
-/* line 29, ../sass/_main.scss */
-div.music_controller {
-  width: 100%;
-  margin-bottom: 20px;
-}
-/* line 32, ../sass/_main.scss */
-div.music_controller audio {
-  width: 100%;
 }
 
 /* line 1, ../sass/_navbar.scss */

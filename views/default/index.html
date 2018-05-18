@@ -4,36 +4,25 @@
 
 <script src="{{=URL('static', 'js/vue.js')}}"></script>
 <script>
-  var tracks_url = "{{=URL('api', 'get_tracks', user_signature=True, hash_vars=False)}}";
-  var add_track_url = "{{=URL('api', 'add_track', user_signature=True)}}";
-  var del_track_url = "{{=URL('api', 'del_track', user_signature=True)}}";
-  var upload_url = "{{=URL('api', 'upload_track', user_signature=True)}}";
-  var play_url = "{{=URL('api', 'play_track')}}";
-  var inc_plays_url = "{{=URL('api', 'inc_plays', user_signature=True)}}";
-  var get_insertion_id_url = "{{=URL('api', 'get_insertion_id', user_signature=True)}}";
-  var cleanup_url = "{{=URL('api', 'cleanup', user_signature=True)}}";
+  // Define your URLs here.
 </script>
-
-<script src="{{=URL('static', 'js/dropzone.js')}}"></script>
 
 
 {{end}}
 
 <div class="main_content">
 
-  <!-- Dropzone uploader. This unfortunately cannot go into the Vue div -->
-  <div id="uploader_div" style="display:none">
-    Drop your photo here
-  </div>
-
   <div id="vue-div" class="display:none">
     <!-- Your code goes here.  Remember to call $("#vue-div").show() once you get the data for the first time. -->
+
+    <div id="uploader_div" style="display:none">
+       Upload an image file: <input type="file" v-on:change="upload_file" accept="image/jpeg">
+    </div>
 
     <button v-on:click="open_uploader">Add</button>
 
   </div>
-
-
+  
 </div>
 
 <script src="{{=URL('static', 'js/default_index.js')}}"></script>

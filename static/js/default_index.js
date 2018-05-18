@@ -18,37 +18,42 @@ var app = function() {
     var enumerate = function(v) { var k=0; return v.map(function(e) {e._idx = k++;});};
 
     self.open_uploader = function () {
-        // First, gets an upload URL.
-        console.log("Trying to get the upload url");
-        $.getJSON('https://upload-dot-luca-teaching.appspot.com/start/uploader/get_upload_url',
-            function (data) {
-                // We now have upload (and download) URLs.
-                var put_url = data['signed_url'];
-                var get_url = data['access_url'];
-                console.log("Received upload url: " + put_url);
-                // Creates the uploader.
-                self.dropzone = new Dropzone("div#uploader_div", {
-                    url: put_url,
-                    maxFilesize: 40, // MB
-                    addRemoveLinks: false,
-                    parallelUploads: 1,
-                    acceptedFiles: 'image/jpeg',
-                    createImageThumbnails: false,
-                    init: function () {
-                        this.on("addedfile", function () {
-                            if (this.files.length > 1) {
-                                this.removeFile(this.files[0]);
-                            }
-                        });
-                        this.on("success", function (file, response) {
-                            this.removeAllFiles();
-                            self.upload_complete(get_url, response);
-                        })
-                    }
-                });
-                // Displays the div.
-                $("div#uploader_div").show();
-            });
+        $("div#uploader_div").show();
+    };
+
+    self.upload_file = function (event) {
+        // Reads the file.
+        var input = event.target;
+        var file = input.files[0];
+        var reader = new FileReader();
+        if (file) {
+            reader.onload = function (e) {
+                // First, gets an upload URL.
+                console.log("Trying to get the upload url");
+                $.getJSON('https://upload-dot-luca-teaching.appspot.com/start/uploader/get_upload_url',
+                    function (data) {
+                        // We now have upload (and download) URLs.
+                        var put_url = data['signed_url'];
+                        var get_url = data['access_url'];
+                        console.log("Received upload url: " + put_url);
+                        // Uploads the file.
+                        $.ajax(
+                            url: put_url,
+                            type: 'POST',,
+                            data: reader.result;
+
+                        )
+                        // Displays the div.
+                    });
+            };
+            reader.readAsBinaryString(file);
+        }
+    };
+
+
+
+
+
     };
 
 
@@ -69,7 +74,8 @@ var app = function() {
         data: {
         },
         methods: {
-            open_uploader: self.open_uploader
+            open_uploader: self.open_uploader,
+            upload_file: self.upload_file
         }
 
     });

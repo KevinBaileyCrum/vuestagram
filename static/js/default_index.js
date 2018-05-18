@@ -25,35 +25,28 @@ var app = function() {
         // Reads the file.
         var input = event.target;
         var file = input.files[0];
-        var reader = new FileReader();
         if (file) {
-            reader.onload = function (e) {
-                // First, gets an upload URL.
-                console.log("Trying to get the upload url");
-                $.getJSON('https://upload-dot-luca-teaching.appspot.com/start/uploader/get_upload_url',
-                    function (data) {
-                        // We now have upload (and download) URLs.
-                        var put_url = data['signed_url'];
-                        var get_url = data['access_url'];
-                        console.log("Received upload url: " + put_url);
-                        // Uploads the file.
-                        $.ajax(
-                            url: put_url,
-                            type: 'POST',,
-                            data: reader.result;
-
-                        )
-                        // Displays the div.
+            // First, gets an upload URL.
+            console.log("Trying to get the upload url");
+            $.getJSON('https://upload-dot-luca-teaching.appspot.com/start/uploader/get_upload_url',
+                function (data) {
+                    // We now have upload (and download) URLs.
+                    var put_url = data['signed_url'];
+                    var get_url = data['access_url'];
+                    console.log("Received upload url: " + put_url);
+                    // Uploads the file.
+                    $.ajax({
+                        url: put_url,
+                        type: "PUT",
+                        data: file,
+                        processData: false,
+                        success: function () {
+                            console.log("The file was uploaded.");
+                            // TODO: Save the get_url into the database, so the picture can be later retrieved.
+                        }
                     });
-            };
-            reader.readAsBinaryString(file);
+                });
         }
-    };
-
-
-
-
-
     };
 
 

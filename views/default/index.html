@@ -25,7 +25,7 @@
             Upload an image file: <input id="file_input" type="file" v-on:change="upload_file" accept="image/jpeg">
           </div>
 
-          <button v-if="!is_uploading" v-on:click="open_uploader">Add</button>
+          <button v-if="!is_uploading" v-on:click="open_uploader"><i class="fa fa-plus"></i></button>
           <button v-if="is_uploading"  v-on:click="close_uploader">Cancel</button>
         </div>
 

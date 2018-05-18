@@ -16,13 +16,14 @@
     <!-- Your code goes here.  Remember to call $("#vue-div").show() once you get the data for the first time. -->
 
     <div id="uploader_div" style="display:none">
-       Upload an image file: <input type="file" v-on:change="upload_file" accept="image/jpeg">
+       Upload an image file: <input id="file_input" type="file" v-on:change="upload_file" accept="image/jpeg">
     </div>
 
-    <button v-on:click="open_uploader">Add</button>
+    <button v-if="!is_uploading" v-on:click="open_uploader">Add</button>
+    <button v-if="is_uploading"  v-on:click="close_uploader">Cancel</button>
 
   </div>
-  
+
 </div>
 
 <script src="{{=URL('static', 'js/default_index.js')}}"></script>

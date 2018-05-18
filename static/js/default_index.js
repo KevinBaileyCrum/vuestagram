@@ -19,6 +19,14 @@ var app = function() {
 
     self.open_uploader = function () {
         $("div#uploader_div").show();
+        self.vue.is_uploading = true;
+    };
+
+    self.close_uploader = function () {
+        $("div#uploader_div").hide();
+        self.vue.is_uploading = false;
+        $("input#file_input").val(""); // This clears the file choice once uploaded.
+
     };
 
     self.upload_file = function (event) {
@@ -37,6 +45,7 @@ var app = function() {
                     // Uploads the file, using the low-level interface.
                     var req = new XMLHttpRequest();
                     req.addEventListener("load", self.upload_complete(get_url));
+                    // TODO: if you like, add a listener
                     req.open("PUT", put_url, true);
                     req.send(file);
                 });
@@ -46,7 +55,7 @@ var app = function() {
 
     self.upload_complete = function(get_url) {
         // Hides the uploader div.
-        $("div#uploader_div").hide();
+        self.close_uploader();
         console.log('The file was uploaded; it is now available at ' + get_url);
         // TODO: The file is uploaded.  Now you have to insert the get_url into the database, etc.
     };
@@ -57,9 +66,11 @@ var app = function() {
         delimiters: ['${', '}'],
         unsafeDelimiters: ['!{', '}'],
         data: {
+            is_uploading: false
         },
         methods: {
             open_uploader: self.open_uploader,
+            close_uploader: self.close_uploader,
             upload_file: self.upload_file
         }
 

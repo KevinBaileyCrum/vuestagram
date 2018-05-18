@@ -34,29 +34,21 @@ var app = function() {
                     var put_url = data['signed_url'];
                     var get_url = data['access_url'];
                     console.log("Received upload url: " + put_url);
-                    // Uploads the file.
-                    $.ajax({
-                        url: put_url,
-                        type: "PUT",
-                        data: file,
-                        processData: false,
-                        success: function () {
-                            console.log("The file was uploaded.");
-                            // TODO: Save the get_url into the database, so the picture can be later retrieved.
-                        }
-                    });
+                    // Uploads the file, using the low-level interface.
+                    var req = new XMLHttpRequest();
+                    req.addEventListener("load", self.upload_complete(get_url));
+                    req.open("PUT", put_url, true);
+                    req.send(file);
                 });
         }
     };
 
 
-    self.upload_complete = function(get_url, response) {
+    self.upload_complete = function(get_url) {
         // Hides the uploader div.
         $("div#uploader_div").hide();
         console.log('The file was uploaded; it is now available at ' + get_url);
-
-        // The file is uploaded.  Now you have to insert it into the database, etc.
-        // COMPLETE
+        // TODO: The file is uploaded.  Now you have to insert the get_url into the database, etc.
     };
 
 

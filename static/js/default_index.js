@@ -1,5 +1,6 @@
 // This is the js for the default/index.html view.
 
+
 var app = function() {
 
     var self = {};
@@ -16,14 +17,48 @@ var app = function() {
     // Enumerates an array.
     var enumerate = function(v) { var k=0; return v.map(function(e) {e._idx = k++;});};
 
-    self.get_upload_url = function () {
-        $.get_json('https://upload-dot-luca-teaching.appspot.com/start/uploader/get_upload_url',
+    self.open_uploader = function () {
+        // First, gets an upload URL.
+        console.log("Trying to get the upload url");
+        $.getJSON('https://upload-dot-luca-teaching.appspot.com/start/uploader/get_upload_url',
             function (data) {
-                self.put_url = data['signed_url'];
-                self.get_url = data['access_url'];
+                // We now have upload (and download) URLs.
+                var put_url = data['signed_url'];
+                var get_url = data['access_url'];
+                console.log("Received upload url: " + put_url);
+                // Creates the uploader.
+                self.dropzone = new Dropzone("div#uploader_div", {
+                    url: put_url,
+                    maxFilesize: 40, // MB
+                    addRemoveLinks: false,
+                    parallelUploads: 1,
+                    acceptedFiles: 'image/jpeg',
+                    createImageThumbnails: false,
+                    init: function () {
+                        this.on("addedfile", function () {
+                            if (this.files.length > 1) {
+                                this.removeFile(this.files[0]);
+                            }
+                        });
+                        this.on("success", function (file, response) {
+                            this.removeAllFiles();
+                            self.upload_complete(get_url, response);
+                        })
+                    }
+                });
+                // Displays the div.
+                $("div#uploader_div").show();
+            });
+    };
 
-            }
-            )
+
+    self.upload_complete = function(get_url, response) {
+        // Hides the uploader div.
+        $("div#uploader_div").hide();
+        console.log('The file was uploaded; it is now available at ' + get_url);
+
+        // The file is uploaded.  Now you have to insert it into the database, etc.
+        // COMPLETE
     };
 
 
@@ -32,28 +67,13 @@ var app = function() {
         delimiters: ['${', '}'],
         unsafeDelimiters: ['!{', '}'],
         data: {
-            is_adding_track: false,
-            is_adding_track_info: false,
-            tracks: [],
-            logged_in: false,
-            has_more: false,
-            form_artist: null,
-            form_track: null,
-            form_album: null,
-            selected_id: -1  // Track selected to play.
         },
         methods: {
-            get_more: self.get_more,
-            add_track_button: self.add_track_button,
-            add_track: self.add_track,
-            delete_track: self.delete_track,
-            select_track: self.select_track,
-            cancel_add_track: self.cancel_add_track
+            open_uploader: self.open_uploader
         }
 
     });
 
-    self.get_tracks();
     $("#vue-div").show();
 
     return self;

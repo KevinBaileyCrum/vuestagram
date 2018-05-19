@@ -45,7 +45,7 @@ var app = function() {
                     // Uploads the file, using the low-level interface.
                     var req = new XMLHttpRequest();
                     req.addEventListener("load", self.upload_complete(get_url));
-                    // TODO: if you like, add a listener
+                    // TODO: if you like, add a listener for "error" to detect failure.
                     req.open("PUT", put_url, true);
                     req.send(file);
                 });

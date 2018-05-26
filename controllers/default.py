@@ -25,7 +25,7 @@ def get_products():
     products = db(q).select(db.product.ALL)
     # Fixes some fields, to make it easy on the client side.
     for p in products:
-        p.image_url = URL('download', p.image)
+        p.image_url = URL('default', 'download', args=[p.image])
         p.desired_quantity = min(1, p.quantity)
         p.cart_quantity = 0
     return response.json(dict(

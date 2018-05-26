@@ -53,12 +53,12 @@ def purchase():
     except stripe.error.CardError as e:
         logger.info("The card has been declined.")
         logger.info("%r" % traceback.format_exc())
-        return "nok"
+        return response.json(dict(result="nok"))
     db.customer_order.insert(
         customer_info=request.vars.customer_info,
         transaction_token=json.dumps(token),
         cart=request.vars.cart)
-    return "ok"
+    return response.json(dict(result="nok"))
 
 
 # Normally here we would check that the user is an admin, and do programmatic
@@ -115,7 +115,6 @@ def user():
     return dict(form=auth())
 
 
-@cache.action()
 def download():
     """
     allows downloading of uploaded files

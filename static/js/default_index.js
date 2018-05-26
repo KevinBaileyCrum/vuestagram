@@ -137,12 +137,16 @@ var app = function() {
                 cart: JSON.stringify(self.vue.cart),
             },
             function (data) {
-                // The order was successful.
-                self.vue.cart = [];
-                self.update_cart();
-                self.store_cart();
-                self.goto('prod');
-                $.web2py.flash("Thank you for your purchase");
+                if (data.result === "ok") {
+                    // The order was successful.
+                    self.vue.cart = [];
+                    self.update_cart();
+                    self.store_cart();
+                    self.goto('prod');
+                    $.web2py.flash("Thank you for your purchase");
+                } else {
+                    $.web2py.flash("The card was declined.");
+                }
             }
         );
     };

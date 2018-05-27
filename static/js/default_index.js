@@ -56,13 +56,12 @@ var app = function() {
     self.upload_complete = function(get_url) {
         // Hides the uploader div.
         self.close_uploader();
-        console.log('hello');
-        console.log('dingus The file was uploaded; it is now available at ' + get_url);
+        console.log('The file was uploaded; it is now available at ' + get_url);
         // TODO: The file is uploaded.  Now you have to insert the get_url into the database, etc.
         $.post(
             add_image_url,
             {
-                image_url: get_url
+                image_url: get_url,
             },
             function(data){
                 // $.web2py.enableElement( $("#name_here") );

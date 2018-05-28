@@ -6,6 +6,7 @@
 <script>
   // Define your URLs here.
   var add_image_url = "{{=URL('api', 'add_image', user_signature=True)}}";
+  var get_images_url = "{{=URL('api', 'get_images', user_signature=True)}}";
 </script>
 
 
@@ -34,10 +35,10 @@
           <!-- Put here the code to display the images -->
 
           <ul class="container">
-            <!-- The following is an example
+            <!-- The following is an example -->
             <li v-for="image in user_images" class="card lifted padded quarter">
               <img v-bind:src="image.image_src" height="200px" width="200px" class="padded"/>
-            </li> -->
+            </li> 
           </ul>
         </div>
       </div>

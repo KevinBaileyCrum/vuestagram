@@ -57,7 +57,7 @@ var app = function() {
         // Hides the uploader div.
         self.close_uploader();
         console.log('The file was uploaded; it is now available at ' + get_url);
-        // TODO: The file is uploaded.  Now you have to insert the get_url into the database, etc.
+        // The file is uploaded.  Now you have to insert the get_url into the database, etc.
         $.post(
             add_image_url,
             {
@@ -70,12 +70,19 @@ var app = function() {
         )
     };
 
+    self.get_images = function () {
+        $.getJSON(get_images_url, function (data) {
+            self.vue.user_images = data.images;
+            enumerate(self.vue.user_images);
+        })
+    };
 
     self.vue = new Vue({
         el: "#vue-div",
         delimiters: ['${', '}'],
         unsafeDelimiters: ['!{', '}'],
         data: {
+            user_images: [],
             is_uploading: false,
             self_page: true // Leave it to true, so initially you are looking at your own images.
         },
@@ -87,6 +94,7 @@ var app = function() {
 
     });
 
+    self.get_images();
     $("#vue-div").show();
 
     return self;

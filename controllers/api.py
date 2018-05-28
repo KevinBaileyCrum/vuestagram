@@ -12,6 +12,7 @@ def add_image():
     image = db.images( image_id )
     return response.json( dict( image=image ) )
 
+@auth.requires_signature()
 def get_images():
     images = []
     # are_publics=0
@@ -33,6 +34,7 @@ def get_images():
         )
     )
 
+@auth.requires_signature()
 def get_users():
     users = []
     for r in db( db.auth_user.id > 0 ).select():

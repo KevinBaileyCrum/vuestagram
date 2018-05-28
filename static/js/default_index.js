@@ -84,6 +84,10 @@ var app = function() {
         })
     };
 
+    self.click = function () {
+        console.log("clickity");
+    }
+
     self.vue = new Vue({
         el: "#vue-div",
         delimiters: ['${', '}'],
@@ -97,7 +101,8 @@ var app = function() {
         methods: {
             open_uploader: self.open_uploader,
             close_uploader: self.close_uploader,
-            upload_file: self.upload_file
+            upload_file: self.upload_file,
+            click: self.click
         }
 
     });

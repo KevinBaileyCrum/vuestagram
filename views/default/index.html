@@ -7,6 +7,7 @@
   // Define your URLs here.
   var add_image_url = "{{=URL('api', 'add_image', user_signature=True)}}";
   var get_images_url = "{{=URL('api', 'get_images', user_signature=True)}}";
+  var get_users_url = "{{=URL('api', 'get_users', user_signature=True)}}";
 </script>
 
 
@@ -47,11 +48,16 @@
         <!-- Right part of the page -->
         <table class="fill" id="user_selector">
           <tbody>
-            <tr class="center">
-              <!-- This row is you; code for getting your own images, and for setting self_page -->
-              <td>Jane Doe</td>
-            </tr>
+            <!-- <tr class="center"> -->
+            <!-- This row is you; code for getting your own images, and for setting self_page --> 
+            <!--   <td>Jane Doe</td> -->
+            <!-- </tr> -->
             <!-- Then, one row for each person. -->
+            <tr v-for="usr in users" class="center">
+              <!-- This row is you; code for getting your own images, and for setting self_page -->
+              <td> ${usr.first_name} ${usr.last_name} </td>
+            </tr>
+
           </tbody>
         </table>
 

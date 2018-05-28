@@ -33,4 +33,24 @@ def get_images():
         )
     )
 
+def get_users():
+    users = []
+    for r in db( db.auth_user.id > 0 ).select():
+        usr = dict(
+            first_name = r.first_name,
+            last_name = r.last_name,
+            email = r.email,
+            user_id = r.id,
+        )
+        users.append(usr)
+
+    return response.json(dict(
+        users = users
+        )
+    )
+
+
+
+
+
 

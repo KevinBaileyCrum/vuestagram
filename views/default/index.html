@@ -5,10 +5,12 @@
 <script src="{{=URL('static', 'js/vue.js')}}"></script>
 <script>
   // Define your URLs here.
-  var add_image_url = "{{=URL('api', 'add_image', user_signature=True)}}";
-  var get_images_url = "{{=URL('api', 'get_images', user_signature=True)}}";
-  var get_users_url = "{{=URL('api', 'get_users', user_signature=True)}}";
+  var add_image_url        = "{{=URL('api', 'add_image', user_signature=True)}}";
+  var get_user_images_url  = "{{=URL('api', 'get_user_images', user_signature=True)}}";
+  var get_images_url       = "{{=URL('api', 'get_images', user_signature=True)}}";
+  var get_users_url        = "{{=URL('api', 'get_users', user_signature=True)}}";
   var get_current_user_url = "{{=URL('api', 'get_current_user', user_signature=True)}}";
+  var select_user_url      = "{{=URL('api', 'select_user', user_signature=True)}}";
 </script>
 
 
@@ -48,24 +50,16 @@
 
       <div class="user_space quarter right">
         <!-- Right part of the page -->
-        <!-- <table class="fill" id="user_selector"> -->
-        <!--   <tbody> -->
-        <!--       <tr v-for="curusr in current_user" clss="center"> -->
-        <!--           <td> ${curusr.first_name} ${curusr.last_name} </td> -->
-        <!--       </tr> -->
-        <!--   </tbody> -->
-        <!-- </table> -->
-
         <table class="fill" id="user_selector">
           <tbody>
             <!-- Loop through users and display username. -->
             <tr v-for="curusr in current_user" class="center">
                 <!-- returns table row of current user --> 
-                <td v-on:click="click"> ${curusr.first_name} ${curusr.last_name} </td>
+                <td v-on:click="select_user(curusr.user_id)"> ${curusr.first_name} ${curusr.last_name} </td>
             </tr>
             <tr v-for="usr in users" class="center">
               <!-- This row is you; code for getting your own images, and for setting self_page -->
-              <td v-on:click="click"> ${usr.first_name} ${usr.last_name} </td>
+              <td v-on:click="select_user(usr.user_id)"> ${usr.first_name} ${usr.last_name} </td>
             </tr>
           </tbody>
         </table>

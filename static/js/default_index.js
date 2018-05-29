@@ -70,6 +70,13 @@ var app = function() {
         )
     };
 
+    self.get_user_images = function () {
+        $.getJSON(get_user_images_url, function (data) {
+            self.vue.user_images = data.images;
+            // enumerate(self.vue.user_images1);
+        })
+    };
+
     self.get_images = function () {
         $.getJSON(get_images_url, function (data) {
             self.vue.user_images = data.images;
@@ -91,6 +98,10 @@ var app = function() {
         })
     };
 
+    self.select_user = function ( id ) {
+        console.log(id);
+    };
+
     self.click = function () {
         console.log("clickity");
     }
@@ -101,8 +112,10 @@ var app = function() {
         unsafeDelimiters: ['!{', '}'],
         data: {
             user_images: [],
+            // user_images1: [],
             current_user: [],
             users: [],
+            selected_user: null,
             is_uploading: false,
             self_page: true // Leave it to true, so initially you are looking at your own images.
         },
@@ -110,7 +123,8 @@ var app = function() {
             open_uploader: self.open_uploader,
             close_uploader: self.close_uploader,
             upload_file: self.upload_file,
-            click: self.click
+            select_user: self.select_user,
+            get_user_images: self.get_user_images,
         }
 
     });

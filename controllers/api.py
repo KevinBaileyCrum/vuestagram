@@ -13,6 +13,26 @@ def add_image():
     return response.json( dict( image=image ) )
 
 @auth.requires_signature()
+def get_user_images():
+    images = []
+    db_rows = db().select(db.images.ALL)
+    a = auth.user
+    for i, r in enumerate(db_rows):
+        img = dict(
+                created_on = r.created_on,
+                created_by = r.created_by,
+                image_url  = r.image_url,
+        )
+        # if( img.get(created_by) == a.user_id ):
+        images.append(img)
+
+    return response.json(dict(
+        images  = images
+        )
+    )
+
+
+@auth.requires_signature()
 def get_images():
     images = []
     # are_publics=0
@@ -67,7 +87,8 @@ def get_users():
     )
 
 
-
+# @auth.requires_signature()
+# def select_user():
 
 
 

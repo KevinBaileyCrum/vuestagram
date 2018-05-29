@@ -64,8 +64,9 @@ var app = function() {
                 image_url: get_url,
             },
             function(data){
-                // $.web2py.enableElement( $("#name_here") );
-                console.log("hello");
+                setTimeout( function(){
+                    self.get_images( self.vue.current_user[0].user_id );
+                }, 2000);
             }
         )
     };

@@ -77,12 +77,25 @@ var app = function() {
         })
     };
 
-    self.get_images = function () {
-        $.getJSON(get_images_url, function (data) {
-            self.vue.user_images = data.images;
-            enumerate(self.vue.user_images);
-        })
+    // self.get_images = function ( id ) {
+    //     $.getJSON(get_images_url, function (data) {
+    //         self.vue.user_images = data.images;
+    //         enumerate(self.vue.user_images);
+    //     })
+    // };
+
+    self.get_images = function ( id ) {
+            $.post(get_images_url,
+                {
+                    id: id
+                },
+                function (data) {
+                    self.vue.user_images = data.images;
+                // enumerate(self.vue.user_images);
+                }
+            );
     };
+
 
     self.get_current_user = function () {
         $.getJSON(get_current_user_url, function (data) {
@@ -100,6 +113,12 @@ var app = function() {
 
     self.select_user = function ( id ) {
         console.log(id);
+        self.vue.selected_user = id;
+
+        console.log(self.vue.current_user[0].user_id);
+        self.vue.self_page = (id == self.vue.current_user[0].user_id); // toggle plus
+
+        self.get_images(id);
     };
 
     self.click = function () {
@@ -130,7 +149,7 @@ var app = function() {
     });
 
     // TODO: put get user call
-    self.get_images();
+    // self.get_images( );
     self.get_current_user();
     self.get_users();
     $("#vue-div").show();

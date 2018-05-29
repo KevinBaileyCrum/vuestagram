@@ -34,23 +34,25 @@ def get_user_images():
 
 @auth.requires_signature()
 def get_images():
-    images = []
-    # are_publics=0
-    # are_privates=0
-    # Create a bunch of data
-    db_rows = db().select(db.images.ALL)
-    for i, r in enumerate(db_rows):
-        img = dict(
-                created_on = r.created_on,
-                created_by = r.created_by,
-                image_url  = r.image_url,
-        )
-        images.append(img)
-
+    id = request.vars.id
+    images = db(db.images.created_by == id).select()
     return response.json(dict(
-        images  = images
-        )
-    )
+        images = images
+    ))
+    # images = []
+    # db_rows = db().select(db.images.ALL)
+    # for i, r in enumerate(db_rows):
+    #     img = dict(
+    #             created_on = r.created_on,
+    #             created_by = r.created_by,
+    #             image_url  = r.image_url,
+    #     )
+    #     images.append(img)
+
+    # return response.json(dict(
+    #     images  = images
+    #     )
+    # )
 
 @auth.requires_signature()
 def get_current_user():
@@ -71,6 +73,7 @@ def get_current_user():
 
 @auth.requires_signature()
 def get_users():
+    logger.info('hello')
     users = []
     for r in db( db.auth_user.id != auth.user.id ).select():
         usr = dict(
@@ -87,8 +90,6 @@ def get_users():
     )
 
 
-# @auth.requires_signature()
-# def select_user():
 
 
 

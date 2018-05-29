@@ -21,23 +21,38 @@ def get_images():
     db_rows = db().select(db.images.ALL)
     for i, r in enumerate(db_rows):
         img = dict(
-                # created_on = r.created_on,
-                # created_by = r.created_by,
+                created_on = r.created_on,
+                created_by = r.created_by,
                 image_url  = r.image_url,
         )
         images.append(img)
 
     return response.json(dict(
-        # created_on = created_on,
-        # created_by = created_by,
         images  = images
+        )
+    )
+
+@auth.requires_signature()
+def get_current_user():
+    user = []
+    r = auth.user
+    usr = dict(
+        first_name = r.first_name,
+        last_name = r.last_name,
+        email = r.email,
+        user_id = r.id,
+    )
+    user.append( usr )
+
+    return response.json(dict(
+        user = user
         )
     )
 
 @auth.requires_signature()
 def get_users():
     users = []
-    for r in db( db.auth_user.id > 0 ).select():
+    for r in db( db.auth_user.id != auth.user.id ).select():
         usr = dict(
             first_name = r.first_name,
             last_name = r.last_name,

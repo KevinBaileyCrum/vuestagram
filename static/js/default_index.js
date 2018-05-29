@@ -77,6 +77,13 @@ var app = function() {
         })
     };
 
+    self.get_current_user = function () {
+        $.getJSON(get_current_user_url, function (data) {
+            self.vue.current_user = data.user;
+            enumerate(self.vue.current_user);
+        })
+    };
+
     self.get_users = function () {
         $.getJSON(get_users_url, function (data) {
             self.vue.users = data.users;
@@ -94,6 +101,7 @@ var app = function() {
         unsafeDelimiters: ['!{', '}'],
         data: {
             user_images: [],
+            current_user: [],
             users: [],
             is_uploading: false,
             self_page: true // Leave it to true, so initially you are looking at your own images.
@@ -109,6 +117,7 @@ var app = function() {
 
     // TODO: put get user call
     self.get_images();
+    self.get_current_user();
     self.get_users();
     $("#vue-div").show();
 

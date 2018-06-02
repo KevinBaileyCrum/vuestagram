@@ -1,5 +1,4 @@
 // This is the js for the default/index.html view.
-
 var app = function() {
 
     var self = {};
@@ -14,6 +13,7 @@ var app = function() {
     };
 
     // Enumerates an array.
+    #cart enumerate cart-stripe-singlepage
     var enumerate = function(v) {
         var k=0;
         return v.map(function(e) {e._idx = k++;});
@@ -23,7 +23,8 @@ var app = function() {
         // Gets new products in response to a query, or to an initial page load.
         $.getJSON(products_url, $.param({q: self.vue.product_search}), function(data) {
             self.vue.products = data.products;
-            enumerate(self.vue.products);
+            
+          (self.vue.products);
         });
     };
 
@@ -151,17 +152,138 @@ var app = function() {
         );
     };
 
+
+   // hw4 enum// var enumerate = function(v) { var k=0; return v.map(function(e) {e._idx = k++;});};
+
+    self.open_uploader = function () {
+        $("div#uploader_div").show();
+        self.vue.is_uploading = true;
+    };
+
+    self.close_uploader = function () {
+        $("div#uploader_div").hide();
+        self.vue.is_uploading = false;
+        $("input#file_input").val(""); // This clears the file choice once uploaded.
+
+    };
+
+    self.upload_file = function (event) {
+        // Reads the file.
+        var input = event.target;
+        var file = input.files[0];
+        if (file) {
+            // First, gets an upload URL.
+            console.log("Trying to get the upload url");
+            $.getJSON('https://upload-dot-luca-teaching.appspot.com/start/uploader/get_upload_url',
+                function (data) {
+                    // We now have upload (and download) URLs.
+                    var put_url = data['signed_url'];
+                    var get_url = data['access_url'];
+                    console.log("Received upload url: " + put_url);
+                    // Uploads the file, using the low-level interface.
+                    var req = new XMLHttpRequest();
+                    req.addEventListener("load", self.upload_complete(get_url));
+                    // TODO: if you like, add a listener for "error" to detect failure.
+                    req.open("PUT", put_url, true);
+                    req.send(file);
+                });
+        }
+    };
+
+
+    self.upload_complete = function(get_url) {
+        // Hides the uploader div.
+        self.close_uploader();
+        console.log('The file was uploaded; it is now available at ' + get_url);
+        // The file is uploaded.  Now you have to insert the get_url into the database, etc.
+        $.post(
+            add_image_url,
+            {
+                image_url: get_url,
+            },
+            function(data){
+                setTimeout( function(){
+                    self.get_images( self.vue.current_user[0].user_id );
+                }, 2000);
+            }
+        )
+    };
+
+    self.get_user_images = function () {
+        $.getJSON(get_user_images_url, function (data) {
+            self.vue.user_images = data.images;
+            // enumerate(self.vue.user_images1);
+        })
+    };
+
+    // self.get_images = function ( id ) {
+    //     $.getJSON(get_images_url, function (data) {
+    //         self.vue.user_images = data.images;
+    //         enumerate(self.vue.user_images);
+    //     })
+    // };
+
+    self.get_images = function ( id ) {
+            $.post(get_images_url,
+                {
+                    id: id
+                },
+                function (data) {
+                    self.vue.user_images = data.images;
+                // enumerate(self.vue.user_images);
+                }
+            );
+    };
+
+
+    self.get_current_user = function () {
+        $.getJSON(get_current_user_url, function (data) {
+            self.vue.current_user = data.user;
+            enumerate(self.vue.current_user);
+        })
+    };
+
+    self.get_users = function () {
+        $.getJSON(get_users_url, function (data) {
+            self.vue.users = data.users;
+            enumerate(self.vue.users);
+        })
+    };
+
+    self.select_user = function ( id ) {
+        console.log(id);
+        self.vue.selected_user = id;
+
+        console.log(self.vue.current_user[0].user_id);
+        self.vue.self_page = (id == self.vue.current_user[0].user_id); // toggle plus
+
+        self.get_images(id);
+    };
+
+    self.click = function () {
+        console.log("clickity");
+    }
+
     self.vue = new Vue({
         el: "#vue-div",
         delimiters: ['${', '}'],
         unsafeDelimiters: ['!{', '}'],
         data: {
+
             products: [],
             cart: [],
             product_search: '',
             cart_size: 0,
             cart_total: 0,
-            page: 'prod'
+            page: 'prod',
+          
+            user_images: [],
+            // user_images1: [],
+            current_user: [],
+            users: [],
+            selected_user: null,
+            is_uploading: false,
+            self_page: true // Leave it to true, so initially you are looking at your own images
         },
         methods: {
             get_products: self.get_products,
@@ -170,15 +292,27 @@ var app = function() {
             buy_product: self.buy_product,
             goto: self.goto,
             do_search: self.get_products,
-            pay: self.pay
+            pay: self.pay,
+            
+            open_uploader: self.open_uploader,
+            close_uploader: self.close_uploader,
+            upload_file: self.upload_file,
+            select_user: self.select_user,
+            get_user_images: self.get_user_images,
         }
 
     });
 
+    // cart's branch procucts implementation <<<<<<< cart-stripe-singlepage
     self.get_products();
     self.read_cart();
     $("#vue-div").show();
 
+    // TODO: put get user call
+    // self.get_images( );
+    self.get_current_user();
+    self.get_users();
+    $("#vue-div").show();
 
     return self;
 };
@@ -188,3 +322,6 @@ var APP = null;
 // This will make everything accessible from the js console;
 // for instance, self.x above would be accessible as APP.x
 jQuery(function(){APP = app();});
+
+
+

@@ -8,6 +8,7 @@
 import traceback
 
 def index():
+
     """
     I am not doing anything here.  Look elsewhere.
     """
@@ -95,6 +96,9 @@ def view_orders():
     )
     return dict(form=form)
 
+
+    """This is the home page."""
+    # return dict() #hw4 legacy codes
 
 def user():
     """

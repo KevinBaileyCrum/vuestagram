@@ -47,9 +47,13 @@ def _():
     # useful links to internal and external resources
     # ------------------------------------------------------------------------------------------------------------------
     response.menu += [
+
         (T('Shop'), False, URL('default', 'index')),
         (T('Manage Products'), False, URL('default', 'product_management')),
         (T('View Orders'), False, URL('default', 'view_orders')),
+
+        (T('My Sites'), False, URL('admin', 'default', 'site')),
+
     ]
 
 

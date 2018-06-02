@@ -3,6 +3,7 @@
 }
 
 div.main_content {
+
   padding: 20px;
   button:focus {
     // Please no silly leftover border.
@@ -43,3 +44,20 @@ div.main_content {
     font-size: 150%;
   }
 }
+  padding: 10px;
+}
+
+table#user_selector {
+  border: 1px solid gray;
+  tbody tr {
+    border-bottom: 1px solid gray;
+  }
+}
+
+button:disabled {
+  background-color: lightgray;
+  &:hover {
+    box-shadow: none;
+  }
+}
+

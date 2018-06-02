@@ -3,6 +3,8 @@
 {{block head}}
 
 <script src="{{=URL('static', 'js/vue.js')}}"></script>
+<script src="https://checkout.stripe.com/checkout.js"></script>
+  
 <script>
   // Define your URLs here.
   var add_image_url        = "{{=URL('api', 'add_image', user_signature=True)}}";
@@ -11,16 +13,98 @@
   var get_users_url        = "{{=URL('api', 'get_users', user_signature=True)}}";
   var get_current_user_url = "{{=URL('api', 'get_current_user', user_signature=True)}}";
   var select_user_url      = "{{=URL('api', 'select_user', user_signature=True)}}";
+
+  var products_url = "{{=URL('default', 'get_products')}}";
+  var purchase_url = "{{=URL('default', 'purchase', hmac_key=session.hmac_key)}}"
 </script>
 
 
 {{end}}
 
 <div class="main_content">
-
   <div id="vue-div" class="display:none">
-    <!-- Your code goes here.  Remember to call $("#vue-div").show() once you get the data for the first time. -->
+    
+        <!-- dropping cart merge here -->
+        <div class="control_bar container">
+            <div class="search_div threequarters">
+                <span v-if="page=='prod'">
+                    <input class="search_input" v-model="product_search"/>
+                    <button class="btn" v-on:click="do_search"><i class="fa fa-search fa-lg"></i></button>
+                </span>
+                <span v-if="page=='cart'" class="page_title"><i class="fa fa-shopping-cart"></i> Your Shopping Cart</span>
+            </div>
+            <div class="shopping_button quarter">
+                <span v-if="page=='prod'">
+                    <button class="btn orange" v-on:click="goto('cart')">
+                        <i class="fa fa-lg fa-shopping-cart"></i> ${cart_size}
+                    </button>
+                </span>
+                <span v-if="page=='cart'">
+                    <button class="btn" v-on:click="goto('prod')"> Continue shopping </button>
+                </span>
+            </div>
+        </div>
 
+        <div v-if="page=='prod'" id="products_list">
+            <div v-for="product in products" class="container">
+                <div class="third prod_image">
+                    <img v-bind:src="product.image_url" width="100%" class="product_image"/>
+                </div>
+                <div class="twothirds product_info">
+                    <div class="product_name"><h2>${product.product_name}</h2></div>
+                    <div class="product_quantity_price">
+                        <span class="product_price">$ ${product.price}</span>
+                        <span class="product_quantity">Quantity in stock: ${product.quantity}</span>
+                        <span class="buy_buttons">
+                            <button class="btn" v-on:click="inc_desired_quantity(product._idx, 1)"><i class="fa fa-plus"></i></button>
+                            <span class="desired_quantity">${product.desired_quantity}</span>
+                            <button class="btn" v-on:click="inc_desired_quantity(product._idx, -1)"><i class="fa fa-minus"></i></button>
+                            <button class="btn red" v-on:click="buy_product(product._idx)"><i class="fa fa-lg fa-shopping-cart"></i> Buy</button>
+                        </span>
+                    </div>
+                    
+                    <div class="product_description">
+                        <p>${product.description}</p>
+                    </div>
+
+                </div>
+
+            </div>
+        </div>
+
+        <div v-if="page=='cart'" id="cart_list">
+            <div v-if="cart.length == 0" class="container">
+                <div class="cart_empty_msg">
+                    Your cart is empty
+                </div>
+            </div>
+            <div v-for="product in cart" class="container">
+                <div class="col-md-3 prod_image third">
+                    <img v-bind:src="product.image_url" width="100%" class="product_image"/>
+                </div>
+                <div class="col-md-10 product_info twothirds">
+                    <div class="product_name"><h2>${product.product_name}</h2></div>
+                    <div class="product_quantity_price">
+                        <span class="product_price">$ ${product.price}</span>
+                        <span class="product_quantity">Quantity in stock: ${product.quantity}</span>
+                        <span class="buy_buttons">
+                            <button class="btn" v-on:click="inc_cart_quantity(product._idx, 1)"><i class="fa fa-plus"></i></button>
+                            <span class="desired_quantity">${product.cart_quantity}</span>
+                            <button class="btn" v-on:click="inc_cart_quantity(product._idx, -1)"><i class="fa fa-minus"></i></button>
+                        </span>
+                    </div>
+                    <div class="product_description">
+                        <p>${product.description}</p>
+                    </div>
+                </div>
+            </div>
+            <div v-if="cart.length > 0" class="total_price">
+                Your total price: $ ${cart_total}
+                <button class="btn blue" v-on:click="pay()"><i class="fa fa-lg fa-credit-card"></i> Pay</button>
+            </div>
+        </div>    
+    
+    <!-- Your code goes here.  Remember to call $("#vue-div").show() once you get the data for the first time. -->
     <div class="container padded">
 
       <div class="image_space threequarters">
@@ -28,7 +112,24 @@
         <div v-if="self_page">
           <!-- Code to upload files, with control buttons -->
           <div id="uploader_div" style="display:none">
-            Upload an image file: <input id="file_input" type="file" v-on:change="upload_file" accept="image/jpeg">
+            <!-- Upload an image file: <input id="file_input" type="file" v-on:change="upload_file" accept="image/jpeg"> -->
+            <!-- <form action=""> -->
+                <!-- <p> hello <p> -->
+            <!-- </form> -->
+            
+            <form>
+                <div class="upl_form" id="form_img">
+                    Upload an image file: 
+                    <input id="file_input" type="file" v-on:change="upload_file" accept="image/jpeg">
+                </div>
+                <div class="upl_form" id="form_prc">
+                    <input placeholder="Set Desired Price:" type="number" /> 
+                </div>
+                <div class="upl_form" id="form_sub">
+                    <input class="btn btn-primary" type="submit" value="Upload" />
+                </div>
+            </form>
+          
           </div>
 
           <button v-if="!is_uploading" v-on:click="open_uploader"><i class="fa fa-plus"></i></button>
@@ -37,7 +138,6 @@
 
         <div class="image_container">
           <!-- Put here the code to display the images -->
-
           <ul class="container">
             <!-- The following is an example -->
             <li v-for="image in user_images" class="card lifted padded quarter">
@@ -66,7 +166,6 @@
       </div>
 
   </div>
-
 </div>
 
 <script src="{{=URL('static', 'js/default_index.js')}}"></script>

@@ -3,6 +3,47 @@
 }
 
 div.main_content {
+
+  padding: 20px;
+  button:focus {
+    // Please no silly leftover border.
+    border-color: white;
+    outline: none;
+  }
+  input.search_input {
+    width: 80% !important;
+  }
+  div.product_description {
+    margin-top: 15px;
+  }
+  span.buy_buttons {
+    margin-left: 30px;
+  }
+  span.product_quantity {
+    margin-left: 30px;
+  }
+  span.product_price {
+    font-size: 140%;
+    font-weight: bold;
+  }
+  .product_image {
+    max-width: 300px;
+  }
+  .shopping_button {
+    margin-top: 10px;
+    margin-bottom: 10px;
+  }
+  .search_div {
+    margin-top: 10px;
+    margin-bottom: 10px;
+  }
+  .page_title {
+    font-size: 250%;
+  }
+  .total_price {
+    font-size: 150%;
+  }
+}
   padding: 10px;
 }
 
@@ -19,3 +60,4 @@ button:disabled {
     box-shadow: none;
   }
 }
+

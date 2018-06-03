@@ -164,17 +164,22 @@ var app = function() {
         $("div#uploader_div").hide();
         self.vue.is_uploading = false;
         $("input#file_input").val(""); // This clears the file choice once uploaded.
+        $("input#file_price").val(""); // this clears the price
+
 
     };
 
     self.upload_file = function (event) {
         // Reads the file.
         var input = event.target.file_input;
-        console.log('event');
-        console.log(event);
-        console.log('event.target.file_input as input');
-        console.log(input);
-        // console.log(event.target.file_input);
+        var price = event.target.file_price.value;
+        console.log('target price.value');
+        console.log(event.target.file_price.value);
+        // console.log('event');
+        // console.log(event);
+        // console.log('event.target.file_input as input');
+        // console.log(input);
+        console.log(event.target);
         var file = input.files[0];
         if (file) {
             // First, gets an upload URL.

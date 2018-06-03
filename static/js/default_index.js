@@ -13,7 +13,7 @@ var app = function() {
     };
 
     // Enumerates an array.
-    #cart enumerate cart-stripe-singlepage
+    //#cart enumerate cart-stripe-singlepage
     var enumerate = function(v) {
         var k=0;
         return v.map(function(e) {e._idx = k++;});
@@ -23,7 +23,7 @@ var app = function() {
         // Gets new products in response to a query, or to an initial page load.
         $.getJSON(products_url, $.param({q: self.vue.product_search}), function(data) {
             self.vue.products = data.products;
-            
+
           (self.vue.products);
         });
     };
@@ -170,7 +170,8 @@ var app = function() {
     self.upload_file = function (event) {
         // Reads the file.
         var input = event.target;
-        var file = input.files[0];
+        console.log(input);
+        var file = input.file[1];
         if (file) {
             // First, gets an upload URL.
             console.log("Trying to get the upload url");
@@ -276,7 +277,7 @@ var app = function() {
             cart_size: 0,
             cart_total: 0,
             page: 'prod',
-          
+
             user_images: [],
             // user_images1: [],
             current_user: [],
@@ -293,7 +294,7 @@ var app = function() {
             goto: self.goto,
             do_search: self.get_products,
             pay: self.pay,
-            
+
             open_uploader: self.open_uploader,
             close_uploader: self.close_uploader,
             upload_file: self.upload_file,

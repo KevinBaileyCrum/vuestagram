@@ -169,9 +169,13 @@ var app = function() {
 
     self.upload_file = function (event) {
         // Reads the file.
-        var input = event.target;
+        var input = event.target.file_input;
+        console.log('event');
+        console.log(event);
+        console.log('event.target.file_input as input');
         console.log(input);
-        var file = input.file[1];
+        // console.log(event.target.file_input);
+        var file = input.files[0];
         if (file) {
             // First, gets an upload URL.
             console.log("Trying to get the upload url");

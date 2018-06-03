@@ -143,11 +143,11 @@
  
 
 
-            <form action='#' v-on:submit.prevent="upload_file">
+            <form action='#' v-on:submit="upload_file">
                 <div class="upl_form" id="form_img">
                     Upload an image file: 
-                    <input id="file_input" type="file" v-on:change="upload_file" accept="image/jpeg">
-                    <!-- <input id="file_input" type="file" accept="image/jpeg"> -->
+                    <!-- <input id="file_input" type="file" v-on:change="upload_file" accept="image/jpeg"> -->
+                    <input id="file_input" type="file" accept="image/jpeg">
                 </div>
                 <div class="upl_form" id="form_prc">
                     <input placeholder="Set Desired Price:" type="number" /> 

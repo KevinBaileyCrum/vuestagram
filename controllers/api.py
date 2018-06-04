@@ -7,7 +7,8 @@ from gluon.utils import web2py_uuid
 @auth.requires_signature()
 def add_image():
     image_id = db.images.insert(
-            image_url = request.vars.image_url
+            image_url   = request.vars.image_url,
+            image_price = request.vars.image_price
             )
     image = db.images( image_id )
     return response.json( dict( image=image ) )
@@ -19,9 +20,10 @@ def get_user_images():
     a = auth.user
     for i, r in enumerate(db_rows):
         img = dict(
-                created_on = r.created_on,
-                created_by = r.created_by,
-                image_url  = r.image_url,
+                created_on  = r.created_on,
+                created_by  = r.created_by,
+                image_url   = r.image_url,
+                image_price = r.image_price,
         )
         # if( img.get(created_by) == a.user_id ):
         images.append(img)

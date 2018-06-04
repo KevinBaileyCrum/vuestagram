@@ -53,6 +53,7 @@ def get_user_email():
 db.define_table('images',
                 Field('created_on', 'datetime', default=request.now),
                 Field('created_by', 'reference auth_user', default=auth.user_id),
-                Field('image_url')
+                Field('image_url'),
+                Field('image_price','integer'),
 )
 

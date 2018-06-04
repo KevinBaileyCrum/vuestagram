@@ -192,7 +192,7 @@ var app = function() {
                     console.log("Received upload url: " + put_url);
                     // Uploads the file, using the low-level interface.
                     var req = new XMLHttpRequest();
-                    req.addEventListener("load", self.upload_complete(get_url));
+                    req.addEventListener("load", self.upload_complete( get_url, price ) );
                     // TODO: if you like, add a listener for "error" to detect failure.
                     req.open("PUT", put_url, true);
                     req.send(file);
@@ -201,15 +201,19 @@ var app = function() {
     };
 
 
-    self.upload_complete = function(get_url) {
+    self.upload_complete = function(get_url, price) {
         // Hides the uploader div.
         self.close_uploader();
         console.log('The file was uploaded; it is now available at ' + get_url);
         // The file is uploaded.  Now you have to insert the get_url into the database, etc.
+        console.log('price');
+        console.log(price);
+
         $.post(
             add_image_url,
             {
                 image_url: get_url,
+                image_price : price,
             },
             function(data){
                 setTimeout( function(){
@@ -240,6 +244,7 @@ var app = function() {
                 },
                 function (data) {
                     self.vue.user_images = data.images;
+                    console.log(self.vue.user_images);
                 // enumerate(self.vue.user_images);
                 }
             );

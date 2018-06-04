@@ -169,7 +169,8 @@
             <!-- The following is an example -->
             <li v-for="image in user_images" class="card lifted padded quarter">
               <img v-bind:src="image.image_url" height="200px" width="200px" class="padded"/>
-              ${image.image_price}
+              <span class="padded"> ${image.image_price} </span>
+              <button class = "btn.small" v-on:click="cart_click(image)"><i class=" fa fa-shopping-cart"></i> </button>
             </li> 
           </ul>
         </div>
@@ -185,7 +186,7 @@
                 <td v-on:click="select_user(curusr.user_id)"> ${curusr.first_name} ${curusr.last_name} </td>
             </tr>
             <tr v-for="usr in users" class="center">
-              <!-- This row is you; code for getting your own images, and for setting self_page -->
+              <!-- other users -->
               <td v-on:click="select_user(usr.user_id)"> ${usr.first_name} ${usr.last_name} </td>
             </tr>
           </tbody>

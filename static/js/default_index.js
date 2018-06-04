@@ -279,6 +279,15 @@ var app = function() {
         console.log("clickity");
     }
 
+    self.cart_click = function ( id ) {
+        console.log("clkads");
+        console.log(id);
+        // console.log(self.vue.user_images.id);
+        console.log(self.vue.user_images);
+        self.vue.cart.push( id );  // push clicked image on cart
+        console.log(self.vue.cart);
+    }
+
     self.vue = new Vue({
         el: "#vue-div",
         delimiters: ['${', '}'],
@@ -295,6 +304,7 @@ var app = function() {
             user_images: [],
             // user_images1: [],
             current_user: [],
+            // each user has a user_id
             users: [],
             selected_user: null,
             is_uploading: false,
@@ -312,8 +322,11 @@ var app = function() {
             open_uploader: self.open_uploader,
             close_uploader: self.close_uploader,
             upload_file: self.upload_file,
+
+            // select_user takes id calls get_images
             select_user: self.select_user,
             get_user_images: self.get_user_images,
+            cart_click: self.cart_click,
         }
 
     });

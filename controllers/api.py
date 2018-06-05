@@ -24,7 +24,7 @@ def get_user_images():
                 created_by  = r.created_by,
                 image_url   = r.image_url,
                 image_price = r.image_price,
-                is_checked  = r.is_checked,
+                is_checked  = False,
         )
         # if( img.get(created_by) == a.user_id ):
         images.append(img)

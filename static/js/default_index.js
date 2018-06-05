@@ -275,17 +275,81 @@ var app = function() {
         self.get_images(id);
     };
 
-    self.click = function () {
-        console.log("clickity");
+
+    self.edit_price = function( id ){
+
+        // if not owner of images do nothing
+        if( !self.vue.self_page ){
+            console.log('blah');
+            return;
+        }
+
+        // else allow price edit
+        console.log('blew');
+        console.log(id);
+        // $.post(
+        //   edit_price_url,
+        //   {
+        //   },
+        //   function () {
+        //     for(var i = 0; i < self.vue.memo_list.length; i++){
+        //       if (self.vue.memo_list[i].id === memo_id) {
+        //         self.vue.memo_list[i].body = new_body_text;
+        //         self.vue.memo_list[i].title = new_title_text;
+        //         self.vue.memo_list[i].is_being_edited = false;
+        //         break;
+        //       }
+        //     }
+        //     enumerate(self.vue.memo_list);
+        //   }
+        // )
     }
 
     self.cart_click = function ( id ) {
-        console.log("clkads");
-        console.log(id);
-        // console.log(self.vue.user_images.id);
-        console.log(self.vue.user_images);
-        self.vue.cart.push( id );  // push clicked image on cart
-        console.log(self.vue.cart);
+         // if owner of images do nothing
+        if( self.vue.self_page ){
+            console.log('blah');
+            return;
+        }
+
+        // else toggle based on if checked or not
+        if( id.is_checked ){
+            // console.log('is_checked')
+            // console.log(id.is_checked);
+
+            // console.log('popping cart')
+            // console.log(self.vue.cart);
+
+            // remove from cart
+            // console.log('id.id');
+            // console.log(id.id);
+
+            for( i=0; i<self.vue.cart.length; i++ ){
+                if( self.vue.cart[i].id == id.id )
+                    self.vue.cart.splice(i, 1);
+            }
+            // console.log('post pop');
+            // console.log(self.vue.cart);
+
+            id.is_checked = false;
+            // console.log('post set');
+            // console.log(id.is_checked);
+            return;
+
+        }
+        else if( !id.is_checked ){
+            // console.log('adding to cart');
+            self.vue.cart.push( id );  // push clicked image on cart
+            // console.log('cart');
+            // console.log(self.vue.cart);
+
+            // console.log('clicked not is checked');
+            // console.log(id.is_checked);
+            id.is_checked = true;
+            // console.log('post');
+            // console.log(id.is_checked);
+            return;
+        }
     }
 
     self.vue = new Vue({
@@ -302,9 +366,7 @@ var app = function() {
             page: 'prod',
 
             user_images: [],
-            // user_images1: [],
             current_user: [],
-            // each user has a user_id
             users: [],
             selected_user: null,
             is_uploading: false,
@@ -326,6 +388,7 @@ var app = function() {
             // select_user takes id calls get_images
             select_user: self.select_user,
             get_user_images: self.get_user_images,
+            edit_price: self.edit_price,
             cart_click: self.cart_click,
         }
 

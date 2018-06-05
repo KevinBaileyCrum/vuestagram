@@ -106,6 +106,48 @@
             </div>
         </div>    
     
+    
+    <!-- is_checkout area for displaying cart -->
+    <div v-if="is_checkout">
+        <div v-if="cart.length == 0">
+            <p> your cart is empty </p>
+            <button class="btn.small blue" v-on:click="is_checkout = !is_checkout">
+                continue shopping
+            </button>
+        </div>
+        <div v-else>
+            <h1> Your cart </h2>
+            <div v-for="product in cart" class="quarter">
+                <div class="col-md-3 prod_image third">
+                    <img v-bind:src="product.image_url" width="100%" class="product_image"/>
+                </div>
+                <div class="col-md-10 product_info twothirds">
+                    <div class="product_name"><h2>${product.product_name}</h2></div>
+                    <div class="product_quantity_price">
+                        <span class="product_price">image price $ <p5>${product.image_price}</p></span>
+                        <span class="buy_buttons">
+                        </span>
+                    </div>
+                    <div class="product_description">
+                        <p>${product.description}</p>
+                    </div>
+                </div>
+            </div>
+            <button class="btn.small green">
+                purchase items $ ${get_cart_total()}
+            </button>
+            <button class="btn.small blue"  v-on:click="is_checkout = !is_checkout">
+                continue shopping
+            </button>
+        </div>
+    </div>
+
+    <div v-else>  
+        <button class= "btn.small" v-on:click="is_checkout=!is_checkout">
+            checkout
+        </button>
+    </div>
+
     <!-- Your code goes here.  Remember to call $("#vue-div").show() once you get the data for the first time. -->
     <div class="container padded">
 

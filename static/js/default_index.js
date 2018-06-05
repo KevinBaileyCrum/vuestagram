@@ -352,6 +352,15 @@ var app = function() {
         }
     }
 
+    // get total cart price
+    self.get_cart_total = function (){
+        var accum = 0;
+        for( i=0; i<self.vue.cart.length; i++ ){
+            accum += self.vue.cart[i].image_price;
+        }
+        return accum;
+    }
+
     self.vue = new Vue({
         el: "#vue-div",
         delimiters: ['${', '}'],
@@ -370,7 +379,8 @@ var app = function() {
             users: [],
             selected_user: null,
             is_uploading: false,
-            self_page: true // Leave it to true, so initially you are looking at your own images
+            self_page: true,   // Leave it to true, so initially you are looking at your own images
+            is_checkout: false,
         },
         methods: {
             get_products: self.get_products,
@@ -390,6 +400,7 @@ var app = function() {
             get_user_images: self.get_user_images,
             edit_price: self.edit_price,
             cart_click: self.cart_click,
+            get_cart_total: self.get_cart_total,
         }
 
     });

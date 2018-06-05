@@ -103,8 +103,9 @@ var app = function() {
         if (page == 'cart') {
             // prepares the form.
             self.stripe_instance = StripeCheckout.configure({
-                key: 'pk_test_CeE2VVxAs3MWCUDMQpWe8KcX',    //put your own publishable key here
-                image: 'https://stripe.com/img/documentation/checkout/marketplace.png',
+                // key: 'pk_test_CeE2VVxAs3MWCUDMQpWe8KcX',    //put your own publishable key here
+                key:    'pk_test_EYKT1Kb8poJ3wcBrxETOetV6',  // my own publishable key
+                image:  'https://stripe.com/img/documentation/checkout/marketplace.png',
                 locale: 'auto',
                 token: function(token, args) {
                     console.log('got a token. sending data to localhost.');
@@ -118,13 +119,31 @@ var app = function() {
     };
 
     self.pay = function () {
+
+        self.stripe_instance = StripeCheckout.configure({
+            // key: 'pk_test_CeE2VVxAs3MWCUDMQpWe8KcX',    //put your own publishable key here
+            // i     pk_test_EYKT1Kb8poJ3wcBrxETOetV6
+            key:    'pk_test_EYKT1Kb8poJ3wcBrxETOetV6',
+            image:  'https://stripe.com/img/documentation/checkout/marketplace.png',
+            locale: 'auto',
+            token: function(token, args) {
+                console.log('got a token. sending data to localhost.');
+                self.stripe_token = token;
+                self.customer_info = args;
+                self.send_data_to_server();
+            }
+        });
+        console.log('instance');
+        console.log(self.stripe_instance);
         self.stripe_instance.open({
             name: "Your nice cart",
             description: "Buy cart content",
             billingAddress: true,
             shippingAddress: true,
-            amount: Math.round(self.vue.cart_total * 100),
+            // amount: Math.round(self.vue.cart_total * 100),
+            amount: Math.round(self.vue.get_cart_total() * 100),
         });
+
     };
 
     self.send_data_to_server = function () {

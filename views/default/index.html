@@ -122,18 +122,15 @@
                     <img v-bind:src="product.image_url" width="100%" class="product_image"/>
                 </div>
                 <div class="col-md-10 product_info twothirds">
-                    <div class="product_name"><h2>${product.product_name}</h2></div>
                     <div class="product_quantity_price">
                         <span class="product_price">image price $ <p5>${product.image_price}</p></span>
-                        <span class="buy_buttons">
-                        </span>
                     </div>
                     <div class="product_description">
                         <p>${product.description}</p>
                     </div>
                 </div>
             </div>
-            <button class="btn.small green">
+            <button class="btn.small green" v-on:click="pay()">
                 purchase items $ ${get_cart_total()}
             </button>
             <button class="btn.small blue"  v-on:click="is_checkout = !is_checkout">

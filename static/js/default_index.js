@@ -19,106 +19,9 @@ var app = function() {
         return v.map(function(e) {e._idx = k++;});
     };
 
-    self.get_products = function () {
-        // Gets new products in response to a query, or to an initial page load.
-        $.getJSON(products_url, $.param({q: self.vue.product_search}), function(data) {
-            self.vue.products = data.products;
 
-          (self.vue.products);
-        });
-    };
 
-    self.store_cart = function() {
-        localStorage.cart = JSON.stringify(self.vue.cart);
-    };
 
-    self.read_cart = function() {
-        if (localStorage.cart) {
-            self.vue.cart = JSON.parse(localStorage.cart);
-        } else {
-            self.vue.cart = [];
-        }
-        self.update_cart();
-    };
-
-    self.inc_desired_quantity = function(product_idx, qty) {
-        // Inc and dec to desired quantity.
-        var p = self.vue.products[product_idx];
-        p.desired_quantity = Math.max(0, p.desired_quantity + qty);
-        p.desired_quantity = Math.min(p.quantity, p.desired_quantity);
-    };
-
-    self.inc_cart_quantity = function(product_idx, qty) {
-        // Inc and dec to desired quantity.
-        var p = self.vue.cart[product_idx];
-        p.cart_quantity = Math.max(0, p.cart_quantity + qty);
-        p.cart_quantity = Math.min(p.quantity, p.cart_quantity);
-        self.update_cart();
-        self.store_cart();
-    };
-
-    self.update_cart = function () {
-        enumerate(self.vue.cart);
-        var cart_size = 0;
-        var cart_total = 0;
-        for (var i = 0; i < self.vue.cart.length; i++) {
-            var q = self.vue.cart[i].cart_quantity;
-            if (q > 0) {
-                cart_size++;
-                cart_total += q * self.vue.cart[i].price;
-            }
-        }
-        self.vue.cart_size = cart_size;
-        self.vue.cart_total = cart_total;
-    };
-
-    self.buy_product = function(product_idx) {
-        var p = self.vue.products[product_idx];
-        // I need to put the product in the cart.
-        // Check if it is already there.
-        var already_present = false;
-        var found_idx = 0;
-        for (var i = 0; i < self.vue.cart.length; i++) {
-            if (self.vue.cart[i].id === p.id) {
-                already_present = true;
-                found_idx = i;
-            }
-        }
-        // If it's there, just replace the quantity; otherwise, insert it.
-        if (!already_present) {
-            found_idx = self.vue.cart.length;
-            self.vue.cart.push(p);
-        }
-        self.vue.cart[found_idx].cart_quantity = p.desired_quantity;
-
-        // Updates the amount of products in the cart.
-        self.update_cart();
-        self.store_cart();
-    };
-
-    self.customer_info = {}
-
-    // self.goto = function (page) {
-    //     self.vue.page = page;
-    //     if (page == 'cart') {
-    //         // prepares the form.
-    //         self.stripe_instance = StripeCheckout.configure({
-    //             // key: 'pk_test_CeE2VVxAs3MWCUDMQpWe8KcX',    //put your own publishable key here
-    //             key:    'pk_test_EYKT1Kb8poJ3wcBrxETOetV6',  // my own publishable key
-    //             image:  'https://stripe.com/img/documentation/checkout/marketplace.png',
-    //             locale: 'auto',
-    //             token: function(token, args) {
-    //                 console.log('got a token. sending data to localhost.');
-    //                 console.log('goto token');
-    //                 console.log(token);
-    //                 self.stripe_token = token;
-    //                 self.customer_info = args;
-    //                 self.send_data_to_server();
-    //             }
-    //         });
-    //     };
-
-    // };
 
     self.pay = function () {
 
@@ -326,21 +229,6 @@ var app = function() {
     }
 
 
-
-        //   function () {
-        //     for(var i = 0; i < self.vue.memo_list.length; i++){
-        //       if (self.vue.memo_list[i].id === memo_id) {
-        //         self.vue.memo_list[i].body = new_body_text;
-        //         self.vue.memo_list[i].title = new_title_text;
-        //         self.vue.memo_list[i].is_being_edited = false;
-        //         break;
-        //       }
-        //     }
-        //     enumerate(self.vue.memo_list);
-        //   }
-        // )
-    // }
-
     self.cart_click = function ( id ) {
          // if owner of images do nothing
         if( self.vue.self_page ){
@@ -375,6 +263,14 @@ var app = function() {
         }
         else if( !id.is_checked ){
             // console.log('adding to cart');
+            for( i=0; i<self.vue.cart.length; i++ ){
+                if( self.vue.cart[i].id == id.id){
+                    self.vue.cart.splice(i, 1);
+                    id.is_checked = false;
+                    return;
+                }
+            }
+
             self.vue.cart.push( id );  // push clicked image on cart
             // console.log('cart');
             // console.log(self.vue.cart);
@@ -463,9 +359,6 @@ var app = function() {
     });
 
     // cart's branch procucts implementation <<<<<<< cart-stripe-singlepage
-    self.get_products();
-    self.read_cart();
-    $("#vue-div").show();
 
     // TODO: put get user call
     // self.get_images( );

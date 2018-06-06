@@ -46,7 +46,7 @@ chardet-3.0.4.dist-info/WHEEL,sha256=o2k-Qa-RMNIJmUdIc7KU6VWR_ErNRbWNlxDIpl7lm34
 chardet-3.0.4.dist-info/entry_points.txt,sha256=fAMmhu5eJ-zAJ-smfqQwRClQ3-nozOCmvJ6-E8lgGJo,60
 chardet-3.0.4.dist-info/metadata.json,sha256=0htbRM18ujyGZDdfowgAqj6Hq2eQtwzwyhaEveKntgo,1375
 chardet-3.0.4.dist-info/top_level.txt,sha256=AowzBbZy4x8EirABDdJSLJZMkJ_53iIag8xfKR6D7kI,8
-../../bin/chardetect,sha256=-4aM0C9o-usxRyzHXQpZEmz-ZRztth04CoJRSP14okA,229
+../../bin/chardetect,sha256=bDMb5ji6ZORA_jpp2AqGu75TL13BVleY8LRLY0ED9Vg,224
 chardet-3.0.4.dist-info/INSTALLER,sha256=zuuue4knoyJ-UwPPXg8fezS7VCrXJQrAP7zeNuwvFQg,4
 chardet/euctwprober.pyc,,
 chardet/big5freq.pyc,,
@@ -67,14 +67,13 @@ chardet/universaldetector.pyc,,
 chardet/mbcharsetprober.pyc,,
 chardet/sjisprober.pyc,,
 chardet/enums.pyc,,
+chardet/cli/chardetect.pyc,,
 chardet/langcyrillicmodel.pyc,,
 chardet/jpcntx.pyc,,
 chardet/euctwfreq.pyc,,
-chardet/charsetprober.pyc,,
 chardet/langbulgarianmodel.pyc,,
 chardet/mbcssm.pyc,,
 chardet/mbcsgroupprober.pyc,,
-chardet/cli/chardetect.pyc,,
 chardet/euckrprober.pyc,,
 chardet/sbcsgroupprober.pyc,,
 chardet/eucjpprober.pyc,,
@@ -82,6 +81,7 @@ chardet/escprober.pyc,,
 chardet/langhungarianmodel.pyc,,
 chardet/langhebrewmodel.pyc,,
 chardet/escsm.pyc,,
+chardet/charsetprober.pyc,,
 chardet/charsetgroupprober.pyc,,
 chardet/hebrewprober.pyc,,
 chardet/codingstatemachine.pyc,,

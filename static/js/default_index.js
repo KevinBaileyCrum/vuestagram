@@ -98,25 +98,27 @@ var app = function() {
 
     self.customer_info = {}
 
-    self.goto = function (page) {
-        self.vue.page = page;
-        if (page == 'cart') {
-            // prepares the form.
-            self.stripe_instance = StripeCheckout.configure({
-                // key: 'pk_test_CeE2VVxAs3MWCUDMQpWe8KcX',    //put your own publishable key here
-                key:    'pk_test_EYKT1Kb8poJ3wcBrxETOetV6',  // my own publishable key
-                image:  'https://stripe.com/img/documentation/checkout/marketplace.png',
-                locale: 'auto',
-                token: function(token, args) {
-                    console.log('got a token. sending data to localhost.');
-                    self.stripe_token = token;
-                    self.customer_info = args;
-                    self.send_data_to_server();
-                }
-            });
-        };
+    // self.goto = function (page) {
+    //     self.vue.page = page;
+    //     if (page == 'cart') {
+    //         // prepares the form.
+    //         self.stripe_instance = StripeCheckout.configure({
+    //             // key: 'pk_test_CeE2VVxAs3MWCUDMQpWe8KcX',    //put your own publishable key here
+    //             key:    'pk_test_EYKT1Kb8poJ3wcBrxETOetV6',  // my own publishable key
+    //             image:  'https://stripe.com/img/documentation/checkout/marketplace.png',
+    //             locale: 'auto',
+    //             token: function(token, args) {
+    //                 console.log('got a token. sending data to localhost.');
+    //                 console.log('goto token');
+    //                 console.log(token);
+    //                 self.stripe_token = token;
+    //                 self.customer_info = args;
+    //                 self.send_data_to_server();
+    //             }
+    //         });
+    //     };
 
-    };
+    // };
 
     self.pay = function () {
 
@@ -128,9 +130,11 @@ var app = function() {
             locale: 'auto',
             token: function(token, args) {
                 console.log('got a token. sending data to localhost.');
+                console.log(token.id);
                 self.stripe_token = token;
                 self.customer_info = args;
-                self.send_data_to_server();
+                $.web2py.flash("Thank you for your purchase");
+                // self.send_data_to_server();
             }
         });
         console.log('instance');
@@ -143,32 +147,36 @@ var app = function() {
             // amount: Math.round(self.vue.cart_total * 100),
             amount: Math.round(self.vue.get_cart_total() * 100),
         });
-
+        self.clear_purchase();
     };
 
     self.send_data_to_server = function () {
-        console.log("Payment for:", self.customer_info);
-        // Calls the server.
-        $.post(purchase_url,
-            {
-                customer_info: JSON.stringify(self.customer_info),
-                transaction_token: JSON.stringify(self.stripe_token),
-                amount: self.vue.cart_total,
-                cart: JSON.stringify(self.vue.cart),
-            },
-            function (data) {
-                if (data.result === "ok") {
-                    // The order was successful.
-                    self.vue.cart = [];
-                    self.update_cart();
-                    self.store_cart();
-                    self.goto('prod');
-                    $.web2py.flash("Thank you for your purchase");
-                } else {
-                    $.web2py.flash("The card was declined.");
-                }
-            }
-        );
+
+        console.log('self.stripe_token');
+        console.log(self.stripe_token);
+        // $.post(purchase_url,
+        //     {
+        //         customer_info: JSON.stringify(self.customer_info),
+        //         transaction_token: JSON.stringify(self.stripe_token.id),
+        //         amount: self.vue.get_cart_total(),
+        //         cart: JSON.stringify(self.vue.cart),
+        //     },
+        //     function (data) {
+        //         console.log('data');
+        //         console.log(data);
+        //         if (data.result === "ok") {
+        //             // The order was successful.
+        //             self.vue.cart = [];
+        //             self.update_cart();
+        //             self.store_cart();
+        //             self.goto('prod');
+                    // $.web2py.flash("Thank you for your purchase");
+        //         } else {
+        //             $.web2py.flash("The card was declined.");
+        //         }
+        //     }
+        // );
+        alert("success!");
     };
 
 
@@ -190,6 +198,7 @@ var app = function() {
 
     self.upload_file = function (event) {
         // Reads the file.
+        console.log(event);
         var input = event.target.file_input;
         var price = event.target.file_price.value;
         console.log('target price.value');
@@ -295,21 +304,29 @@ var app = function() {
     };
 
 
-    self.edit_price = function( id ){
+    self.edit_price = function( img_id ){
+        var price = prompt('Please enter new price','0.01');
+        console.log(img_id.id);
+        // console.log(self.vue.user_images[img_id])
+        console.log(price);
+        $.post(
+            edit_price_url,
+            {
+                img_id: img_id.id,
+                image_price: price,
 
-        // if not owner of images do nothing
-        if( !self.vue.self_page ){
-            console.log('blah');
-            return;
-        }
+            },
+            function(data){
+                setTimeout( function(){
+                    console.log(data);
+                    self.get_images( self.vue.current_user[0].user_id );
+                }, 2000);
+            }
+        )
+    }
 
-        // else allow price edit
-        console.log('blew');
-        console.log(id);
-        // $.post(
-        //   edit_price_url,
-        //   {
-        //   },
+
+
         //   function () {
         //     for(var i = 0; i < self.vue.memo_list.length; i++){
         //       if (self.vue.memo_list[i].id === memo_id) {
@@ -322,7 +339,7 @@ var app = function() {
         //     enumerate(self.vue.memo_list);
         //   }
         // )
-    }
+    // }
 
     self.cart_click = function ( id ) {
          // if owner of images do nothing
@@ -373,12 +390,31 @@ var app = function() {
 
     // get total cart price
     self.get_cart_total = function (){
-        var accum = 0;
+        var accum = 0.00;
         for( i=0; i<self.vue.cart.length; i++ ){
             accum += self.vue.cart[i].image_price;
         }
         return accum;
     }
+
+    self.in_cart = function ( image ) {
+        for( i=0; i<self.vue.cart.length; i++ ){
+            if( self.vue.cart[i].id == image.id ){
+                return true;
+            }
+        }
+
+    }
+
+    self.clear_purchase = function (){
+        console.log('hello');
+        for( i=0; i<self.vue.cart.length; i++ ){
+            self.vue.cart[i].is_checked = false;
+        }
+        self.vue.cart = [];
+        // alert("success!");
+    }
+
 
     self.vue = new Vue({
         el: "#vue-div",
@@ -413,12 +449,14 @@ var app = function() {
             open_uploader: self.open_uploader,
             close_uploader: self.close_uploader,
             upload_file: self.upload_file,
+            clear_purchase: self.clear_purchase,
 
             // select_user takes id calls get_images
             select_user: self.select_user,
             get_user_images: self.get_user_images,
             edit_price: self.edit_price,
             cart_click: self.cart_click,
+            in_cart: self.in_cart,
             get_cart_total: self.get_cart_total,
         }
 

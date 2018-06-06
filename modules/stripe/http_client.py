@@ -1,18 +1,19 @@
+from __future__ import absolute_import, division, print_function
+
 import os
 import sys
 import textwrap
 import warnings
 import email
 
-from stripe import error, util
-
+from stripe import error, util, six
 
 # - Requests is the preferred HTTP library
 # - Google App Engine has urlfetch
 # - Use Pycurl if it's there (at least it verifies SSL certs)
 # - Fall back to urllib2 with a warning if needed
 try:
-    import urllib2
+    from stripe.six.moves import urllib
 except ImportError:
     # Try to load in urllib2, but don't sweat it if it's not available.
     pass
@@ -53,7 +54,7 @@ except ImportError:
     urlfetch = None
 
 # proxy support for the pycurl client
-from urlparse import urlparse
+from stripe.six.moves.urllib.parse import urlparse
 
 
 def new_default_http_client(*args, **kwargs):
@@ -76,7 +77,6 @@ def new_default_http_client(*args, **kwargs):
 
 
 class HTTPClient(object):
-
     def __init__(self, verify_ssl_certs=True, proxy=None):
         self._verify_ssl_certs = verify_ssl_certs
         if proxy:
@@ -93,13 +93,18 @@ class HTTPClient(object):
         raise NotImplementedError(
             'HTTPClient subclasses must implement `request`')
 
+    def close(self):
+        raise NotImplementedError(
+            'HTTPClient subclasses must implement `close`')
+
 
 class RequestsClient(HTTPClient):
     name = 'requests'
 
-    def __init__(self, timeout=80, **kwargs):
+    def __init__(self, timeout=80, session=None, **kwargs):
         super(RequestsClient, self).__init__(**kwargs)
         self._timeout = timeout
+        self._session = session or requests.Session()
 
     def request(self, method, url, headers, post_data=None):
         kwargs = {}
@@ -114,12 +119,12 @@ class RequestsClient(HTTPClient):
 
         try:
             try:
-                result = requests.request(method,
-                                          url,
-                                          headers=headers,
-                                          data=post_data,
-                                          timeout=self._timeout,
-                                          **kwargs)
+                result = self._session.request(method,
+                                               url,
+                                               headers=headers,
+                                               data=post_data,
+                                               timeout=self._timeout,
+                                               **kwargs)
             except TypeError as e:
                 raise TypeError(
                     'Warning: It looks like your installed version of the '
@@ -158,6 +163,10 @@ class RequestsClient(HTTPClient):
                 err += " with no error message"
         msg = textwrap.fill(msg) + "\n\n(Network error: %s)" % (err,)
         raise error.APIConnectionError(msg)
+
+    def close(self):
+        if self._session is not None:
+            self._session.close()
 
 
 class UrlFetchClient(HTTPClient):
@@ -217,6 +226,9 @@ class UrlFetchClient(HTTPClient):
         msg = textwrap.fill(msg) + "\n\n(Network error: " + str(e) + ")"
         raise error.APIConnectionError(msg)
 
+    def close(self):
+        pass
+
 
 class PycurlClient(HTTPClient):
     name = 'pycurl'
@@ -224,6 +236,10 @@ class PycurlClient(HTTPClient):
     def __init__(self, verify_ssl_certs=True, proxy=None):
         super(PycurlClient, self).__init__(
             verify_ssl_certs=verify_ssl_certs, proxy=proxy)
+
+        # Initialize this within the object so that we can reuse connections.
+        self._curl = pycurl.Curl()
+
         # need to urlparse the proxy, since PyCurl
         # consumes the proxy url in small pieces
         if self._proxy:
@@ -237,68 +253,78 @@ class PycurlClient(HTTPClient):
             return {}
         raw_headers = data.split('\r\n', 1)[1]
         headers = email.message_from_string(raw_headers)
-        return dict((k.lower(), v) for k, v in dict(headers).iteritems())
+        return dict((k.lower(), v) for k, v in six.iteritems(dict(headers)))
 
     def request(self, method, url, headers, post_data=None):
-        s = util.StringIO.StringIO()
-        rheaders = util.StringIO.StringIO()
-        curl = pycurl.Curl()
+        b = util.io.BytesIO()
+        rheaders = util.io.BytesIO()
+
+        # Pycurl's design is a little weird: although we set per-request
+        # options on this object, it's also capable of maintaining established
+        # connections. Here we call reset() between uses to make sure it's in a
+        # pristine state, but notably reset() doesn't reset connections, so we
+        # still get to take advantage of those by virtue of re-using the same
+        # object.
+        self._curl.reset()
 
         proxy = self._get_proxy(url)
         if proxy:
             if proxy.hostname:
-                curl.setopt(pycurl.PROXY, proxy.hostname)
+                self._curl.setopt(pycurl.PROXY, proxy.hostname)
             if proxy.port:
-                curl.setopt(pycurl.PROXYPORT, proxy.port)
+                self._curl.setopt(pycurl.PROXYPORT, proxy.port)
             if proxy.username or proxy.password:
-                curl.setopt(
+                self._curl.setopt(
                     pycurl.PROXYUSERPWD,
                     "%s:%s" % (proxy.username, proxy.password))
 
         if method == 'get':
-            curl.setopt(pycurl.HTTPGET, 1)
+            self._curl.setopt(pycurl.HTTPGET, 1)
         elif method == 'post':
-            curl.setopt(pycurl.POST, 1)
-            curl.setopt(pycurl.POSTFIELDS, post_data)
+            self._curl.setopt(pycurl.POST, 1)
+            self._curl.setopt(pycurl.POSTFIELDS, post_data)
         else:
-            curl.setopt(pycurl.CUSTOMREQUEST, method.upper())
+            self._curl.setopt(pycurl.CUSTOMREQUEST, method.upper())
 
         # pycurl doesn't like unicode URLs
-        curl.setopt(pycurl.URL, util.utf8(url))
+        self._curl.setopt(pycurl.URL, util.utf8(url))
 
-        curl.setopt(pycurl.WRITEFUNCTION, s.write)
-        curl.setopt(pycurl.HEADERFUNCTION, rheaders.write)
-        curl.setopt(pycurl.NOSIGNAL, 1)
-        curl.setopt(pycurl.CONNECTTIMEOUT, 30)
-        curl.setopt(pycurl.TIMEOUT, 80)
-        curl.setopt(pycurl.HTTPHEADER, ['%s: %s' % (k, v)
-                    for k, v in headers.iteritems()])
+        self._curl.setopt(pycurl.WRITEFUNCTION, b.write)
+        self._curl.setopt(pycurl.HEADERFUNCTION, rheaders.write)
+        self._curl.setopt(pycurl.NOSIGNAL, 1)
+        self._curl.setopt(pycurl.CONNECTTIMEOUT, 30)
+        self._curl.setopt(pycurl.TIMEOUT, 80)
+        self._curl.setopt(
+            pycurl.HTTPHEADER,
+            ['%s: %s' % (k, v) for k, v in six.iteritems(dict(headers))]
+        )
         if self._verify_ssl_certs:
-            curl.setopt(pycurl.CAINFO, os.path.join(
+            self._curl.setopt(pycurl.CAINFO, os.path.join(
                 os.path.dirname(__file__), 'data/ca-certificates.crt'))
         else:
-            curl.setopt(pycurl.SSL_VERIFYHOST, False)
+            self._curl.setopt(pycurl.SSL_VERIFYHOST, False)
 
         try:
-            curl.perform()
+            self._curl.perform()
         except pycurl.error as e:
             self._handle_request_error(e)
-        rbody = s.getvalue()
-        rcode = curl.getinfo(pycurl.RESPONSE_CODE)
+        rbody = b.getvalue().decode('utf-8')
+        rcode = self._curl.getinfo(pycurl.RESPONSE_CODE)
+        headers = self.parse_headers(rheaders.getvalue().decode('utf-8'))
 
-        return rbody, rcode, self.parse_headers(rheaders.getvalue())
+        return rbody, rcode, headers
 
     def _handle_request_error(self, e):
-        if e[0] in [pycurl.E_COULDNT_CONNECT,
-                    pycurl.E_COULDNT_RESOLVE_HOST,
-                    pycurl.E_OPERATION_TIMEOUTED]:
+        if e.args[0] in [pycurl.E_COULDNT_CONNECT,
+                         pycurl.E_COULDNT_RESOLVE_HOST,
+                         pycurl.E_OPERATION_TIMEOUTED]:
             msg = ("Could not connect to Stripe.  Please check your "
                    "internet connection and try again.  If this problem "
                    "persists, you should check Stripe's service status at "
                    "https://twitter.com/stripestatus, or let us know at "
                    "support@stripe.com.")
-        elif (e[0] in [pycurl.E_SSL_CACERT,
-                       pycurl.E_SSL_PEER_CERTIFICATE]):
+        elif e.args[0] in [pycurl.E_SSL_CACERT,
+                           pycurl.E_SSL_PEER_CERTIFICATE]:
             msg = ("Could not verify Stripe's SSL certificate.  Please make "
                    "sure that your network is not intercepting certificates.  "
                    "If this problem persists, let us know at "
@@ -307,7 +333,7 @@ class PycurlClient(HTTPClient):
             msg = ("Unexpected error communicating with Stripe. If this "
                    "problem persists, let us know at support@stripe.com.")
 
-        msg = textwrap.fill(msg) + "\n\n(Network error: " + e[1] + ")"
+        msg = textwrap.fill(msg) + "\n\n(Network error: " + e.args[1] + ")"
         raise error.APIConnectionError(msg)
 
     def _get_proxy(self, url):
@@ -322,12 +348,12 @@ class PycurlClient(HTTPClient):
                     return proxy[scheme]
         return None
 
+    def close(self):
+        pass
+
 
 class Urllib2Client(HTTPClient):
-    if sys.version_info >= (3, 0):
-        name = 'urllib.request'
-    else:
-        name = 'urllib2'
+    name = 'urllib.request'
 
     def __init__(self, verify_ssl_certs=True, proxy=None):
         super(Urllib2Client, self).__init__(
@@ -335,14 +361,14 @@ class Urllib2Client(HTTPClient):
         # prepare and cache proxy tied opener here
         self._opener = None
         if self._proxy:
-            proxy = urllib2.ProxyHandler(self._proxy)
-            self._opener = urllib2.build_opener(proxy)
+            proxy = urllib.request.ProxyHandler(self._proxy)
+            self._opener = urllib.request.build_opener(proxy)
 
     def request(self, method, url, headers, post_data=None):
-        if sys.version_info >= (3, 0) and isinstance(post_data, basestring):
+        if six.PY3 and isinstance(post_data, six.string_types):
             post_data = post_data.encode('utf-8')
 
-        req = urllib2.Request(url, post_data, headers)
+        req = urllib.request.Request(url, post_data, headers)
 
         if method not in ('get', 'post'):
             req.get_method = lambda: method.upper()
@@ -352,17 +378,17 @@ class Urllib2Client(HTTPClient):
             # otherwise, fall to the default urllib opener.
             response = self._opener.open(req) \
                 if self._opener \
-                else urllib2.urlopen(req)
+                else urllib.request.urlopen(req)
             rbody = response.read()
             rcode = response.code
             headers = dict(response.info())
-        except urllib2.HTTPError as e:
+        except urllib.error.HTTPError as e:
             rcode = e.code
             rbody = e.read()
             headers = dict(e.info())
-        except (urllib2.URLError, ValueError) as e:
+        except (urllib.error.URLError, ValueError) as e:
             self._handle_request_error(e)
-        lh = dict((k.lower(), v) for k, v in dict(headers).iteritems())
+        lh = dict((k.lower(), v) for k, v in six.iteritems(dict(headers)))
         return rbody, rcode, lh
 
     def _handle_request_error(self, e):
@@ -370,3 +396,6 @@ class Urllib2Client(HTTPClient):
                "If this problem persists, let us know at support@stripe.com.")
         msg = textwrap.fill(msg) + "\n\n(Network error: " + str(e) + ")"
         raise error.APIConnectionError(msg)
+
+    def close(self):
+        pass

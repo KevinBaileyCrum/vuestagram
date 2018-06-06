@@ -55,6 +55,6 @@ db.define_table('images',
                 Field('created_by', 'reference auth_user', default=auth.user_id),
                 Field('image_url'),
                 Field('image_price','float'),
-                Field('is_checked', 'boolean', default=False),
+                # Field('is_checked', 'boolean', default=False),
 )
 

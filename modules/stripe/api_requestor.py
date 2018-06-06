@@ -1,14 +1,16 @@
+from __future__ import absolute_import, division, print_function
+
 import calendar
 import datetime
 import platform
 import time
-import urllib
-import urlparse
 import warnings
 
 import stripe
-from stripe import error, http_client, version, util
+from stripe import error, oauth_error, http_client, version, util, six
 from stripe.multipart_data_generator import MultipartDataGenerator
+from stripe.six.moves.urllib.parse import urlencode, urlsplit, urlunsplit
+from stripe.stripe_response import StripeResponse
 
 
 def _encode_datetime(dttime):
@@ -22,13 +24,13 @@ def _encode_datetime(dttime):
 
 def _encode_nested_dict(key, data, fmt='%s[%s]'):
     d = {}
-    for subkey, subvalue in data.iteritems():
+    for subkey, subvalue in six.iteritems(data):
         d[fmt % (key, subkey)] = subvalue
     return d
 
 
 def _api_encode(data):
-    for key, value in data.iteritems():
+    for key, value in six.iteritems(data):
         key = util.utf8(key)
         if value is None:
             continue
@@ -53,19 +55,21 @@ def _api_encode(data):
 
 
 def _build_api_url(url, query):
-    scheme, netloc, path, base_query, fragment = urlparse.urlsplit(url)
+    scheme, netloc, path, base_query, fragment = urlsplit(url)
 
     if base_query:
         query = '%s&%s' % (base_query, query)
 
-    return urlparse.urlunsplit((scheme, netloc, path, query, fragment))
+    return urlunsplit((scheme, netloc, path, query, fragment))
 
 
 class APIRequestor(object):
 
-    def __init__(self, key=None, client=None, api_base=None, account=None):
+    def __init__(self, key=None, client=None, api_base=None, api_version=None,
+                 account=None):
         self.api_base = api_base or stripe.api_base
         self.api_key = key
+        self.api_version = api_version or stripe.api_version
         self.stripe_account = account
 
         from stripe import verify_ssl_certs as verify
@@ -122,7 +126,7 @@ class APIRequestor(object):
             'If you need public access to this function, please email us '
             'at support@stripe.com.',
             DeprecationWarning)
-        return urllib.urlencode(list(_api_encode(d)))
+        return urlencode(list(_api_encode(d)))
 
     @classmethod
     def build_url(cls, url, params):
@@ -134,50 +138,157 @@ class APIRequestor(object):
             DeprecationWarning)
         return _build_api_url(url, cls.encode(params))
 
+    @classmethod
+    def format_app_info(cls, info):
+        str = info['name']
+        if info['version']:
+            str += "/%s" % (info['version'],)
+        if info['url']:
+            str += " (%s)" % (info['url'],)
+        return str
+
     def request(self, method, url, params=None, headers=None):
         rbody, rcode, rheaders, my_api_key = self.request_raw(
             method.lower(), url, params, headers)
         resp = self.interpret_response(rbody, rcode, rheaders)
         return resp, my_api_key
 
-    def handle_api_error(self, rbody, rcode, resp, rheaders):
+    def handle_error_response(self, rbody, rcode, resp, rheaders):
         try:
-            err = resp['error']
+            error_data = resp['error']
         except (KeyError, TypeError):
             raise error.APIError(
                 "Invalid response object from API: %r (HTTP response code "
                 "was %d)" % (rbody, rcode),
                 rbody, rcode, resp)
 
+        err = None
+
+        # OAuth errors are a JSON object where `error` is a string. In
+        # contrast, in API errors, `error` is a hash with sub-keys. We use
+        # this property to distinguish between OAuth and API errors.
+        if isinstance(error_data, six.string_types):
+            err = self.specific_oauth_error(
+                rbody, rcode, resp, rheaders, error_data)
+
+        if err is None:
+            err = self.specific_api_error(
+                rbody, rcode, resp, rheaders, error_data)
+
+        raise err
+
+    def specific_api_error(self, rbody, rcode, resp, rheaders, error_data):
+        util.log_info(
+            'Stripe API error received',
+            error_code=error_data.get('code'),
+            error_type=error_data.get('type'),
+            error_message=error_data.get('message'),
+            error_param=error_data.get('param'),
+        )
+
         # Rate limits were previously coded as 400's with code 'rate_limit'
-        if rcode == 429 or (rcode == 400 and err.get('code') == 'rate_limit'):
-            raise error.RateLimitError(
-                err.get('message'), rbody, rcode, resp, rheaders)
+        if rcode == 429 or (rcode == 400 and
+                            error_data.get('code') == 'rate_limit'):
+            return error.RateLimitError(
+                error_data.get('message'), rbody, rcode, resp, rheaders)
         elif rcode in [400, 404]:
-            raise error.InvalidRequestError(
-                err.get('message'), err.get('param'),
-                rbody, rcode, resp, rheaders)
+            if error_data.get('type') == "idempotency_error":
+                return error.IdempotencyError(
+                    error_data.get('message'), rbody, rcode, resp, rheaders)
+            else:
+                return error.InvalidRequestError(
+                    error_data.get('message'), error_data.get('param'),
+                    error_data.get('code'), rbody, rcode, resp, rheaders)
         elif rcode == 401:
-            raise error.AuthenticationError(
-                err.get('message'), rbody, rcode, resp,
-                rheaders)
+            return error.AuthenticationError(
+                error_data.get('message'), rbody, rcode, resp, rheaders)
         elif rcode == 402:
-            raise error.CardError(err.get('message'), err.get('param'),
-                                  err.get('code'), rbody, rcode, resp,
-                                  rheaders)
+            return error.CardError(
+                error_data.get('message'), error_data.get('param'),
+                error_data.get('code'), rbody, rcode, resp, rheaders)
         elif rcode == 403:
-            raise error.PermissionError(
-                err.get('message'), rbody, rcode, resp,
-                rheaders)
+            return error.PermissionError(
+                error_data.get('message'), rbody, rcode, resp, rheaders)
         else:
-            raise error.APIError(err.get('message'), rbody, rcode, resp,
-                                 rheaders)
+            return error.APIError(
+                error_data.get('message'), rbody, rcode, resp, rheaders)
+
+    def specific_oauth_error(self, rbody, rcode, resp, rheaders, error_code):
+        description = resp.get('error_description', error_code)
+
+        util.log_info(
+            'Stripe OAuth error received',
+            error_code=error_code,
+            error_description=description,
+        )
+
+        args = [
+            error_code,
+            description,
+            rbody,
+            rcode,
+            resp,
+            rheaders
+        ]
+
+        if error_code == 'invalid_client':
+            return oauth_error.InvalidClientError(*args)
+        elif error_code == 'invalid_grant':
+            return oauth_error.InvalidGrantError(*args)
+        elif error_code == 'invalid_request':
+            return oauth_error.InvalidRequestError(*args)
+        elif error_code == 'invalid_scope':
+            return oauth_error.InvalidScopeError(*args)
+        elif error_code == 'unsupported_grant_type':
+            return oauth_error.UnsupportedGrantTypError(*args)
+        elif error_code == 'unsupported_response_type':
+            return oauth_error.UnsupportedResponseTypError(*args)
+
+        return None
+
+    def request_headers(self, api_key, method):
+        user_agent = 'Stripe/v1 PythonBindings/%s' % (version.VERSION,)
+        if stripe.app_info:
+            user_agent += " " + self.format_app_info(stripe.app_info)
+
+        ua = {
+            'bindings_version': version.VERSION,
+            'lang': 'python',
+            'publisher': 'stripe',
+            'httplib': self._client.name,
+        }
+        for attr, func in [['lang_version', platform.python_version],
+                           ['platform', platform.platform],
+                           ['uname', lambda: ' '.join(platform.uname())]]:
+            try:
+                val = func()
+            except Exception as e:
+                val = "!! %s" % (e,)
+            ua[attr] = val
+        if stripe.app_info:
+            ua['application'] = stripe.app_info
+
+        headers = {
+            'X-Stripe-Client-User-Agent': util.json.dumps(ua),
+            'User-Agent': user_agent,
+            'Authorization': 'Bearer %s' % (api_key,),
+        }
+
+        if self.stripe_account:
+            headers['Stripe-Account'] = self.stripe_account
+
+        if method == 'post':
+            headers['Content-Type'] = 'application/x-www-form-urlencoded'
+
+        if self.api_version is not None:
+            headers['Stripe-Version'] = self.api_version
+
+        return headers
 
     def request_raw(self, method, url, params=None, supplied_headers=None):
         """
         Mechanism for issuing an API call
         """
-        from stripe import api_version
 
         if self.api_key:
             my_api_key = self.api_key
@@ -195,7 +306,7 @@ class APIRequestor(object):
 
         abs_url = '%s%s' % (self.api_base, url)
 
-        encoded_params = urllib.urlencode(list(_api_encode(params or {})))
+        encoded_params = urlencode(list(_api_encode(params or {})))
 
         if method == 'get' or method == 'delete':
             if params:
@@ -218,62 +329,41 @@ class APIRequestor(object):
                 'Stripe bindings.  Please contact support@stripe.com for '
                 'assistance.' % (method,))
 
-        ua = {
-            'bindings_version': version.VERSION,
-            'lang': 'python',
-            'publisher': 'stripe',
-            'httplib': self._client.name,
-        }
-        for attr, func in [['lang_version', platform.python_version],
-                           ['platform', platform.platform],
-                           ['uname', lambda: ' '.join(platform.uname())]]:
-            try:
-                val = func()
-            except Exception as e:
-                val = "!! %s" % (e,)
-            ua[attr] = val
-
-        headers = {
-            'X-Stripe-Client-User-Agent': util.json.dumps(ua),
-            'User-Agent': 'Stripe/v1 PythonBindings/%s' % (version.VERSION,),
-            'Authorization': 'Bearer %s' % (my_api_key,)
-        }
-
-        if self.stripe_account:
-            headers['Stripe-Account'] = self.stripe_account
-
-        if method == 'post':
-            headers['Content-Type'] = 'application/x-www-form-urlencoded'
-
-        if api_version is not None:
-            headers['Stripe-Version'] = api_version
+        headers = self.request_headers(my_api_key, method)
 
         if supplied_headers is not None:
-            for key, value in supplied_headers.items():
+            for key, value in six.iteritems(supplied_headers):
                 headers[key] = value
+
+        util.log_info('Request to Stripe api', method=method, path=abs_url)
+        util.log_debug(
+            'Post details',
+            post_data=encoded_params, api_version=self.api_version)
 
         rbody, rcode, rheaders = self._client.request(
             method, abs_url, headers, post_data)
 
-        util.logger.info('%s %s %d', method.upper(), abs_url, rcode)
-        util.logger.debug(
-            'API request to %s returned (response code, response body) of '
-            '(%d, %r)',
-            abs_url, rcode, rbody)
+        util.log_info(
+            'Stripe API response', path=abs_url, response_code=rcode)
+        util.log_debug('API response body', body=rbody)
+        if 'Request-Id' in rheaders:
+            util.log_debug('Dashboard link for request',
+                           link=util.dashboard_link(rheaders['Request-Id']))
         return rbody, rcode, rheaders, my_api_key
 
     def interpret_response(self, rbody, rcode, rheaders):
         try:
             if hasattr(rbody, 'decode'):
                 rbody = rbody.decode('utf-8')
-            resp = util.json.loads(rbody)
+            resp = StripeResponse(rbody, rcode, rheaders)
         except Exception:
             raise error.APIError(
                 "Invalid response body from API: %s "
                 "(HTTP response code was %d)" % (rbody, rcode),
                 rbody, rcode, rheaders)
         if not (200 <= rcode < 300):
-            self.handle_api_error(rbody, rcode, resp, rheaders)
+            self.handle_error_response(rbody, rcode, resp.data, rheaders)
+
         return resp
 
     # Deprecated request handling.  Will all be removed in 2.0
@@ -345,4 +435,4 @@ class APIRequestor(object):
 
     def handle_urllib2_error(self, err, abs_url):
         from stripe.http_client import Urllib2Client
-        return self._deprecated_handle_error(Urllib2Client, err)
+        return self._deprecated_handle_error(Urllib2Client, err, abs_url)

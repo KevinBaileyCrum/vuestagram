@@ -37,7 +37,11 @@ def get_user_images():
 
 @auth.requires_signature()
 def get_images():
+    logger.info('request.vars.id for images')
+    logger.info(request.vars.id)
     id = request.vars.id
+    logger.info('ididid')
+    logger.info(id)
     images = db(db.images.created_by == id).select()
     return response.json(dict(
         images = images
@@ -79,6 +83,17 @@ def get_users():
     )
 
 
+@auth.requires_signature()
+def edit_price():
 
+    img = request.vars.img_id
+    logger.info('img')
+    logger.info(img)
+    price = request.vars.image_price
+
+    db(db.images.id == img).update(
+        image_price = price
+    )
+    return "ok"
 
 

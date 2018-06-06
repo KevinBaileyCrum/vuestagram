@@ -41,25 +41,33 @@ def purchase():
     # Creates the charge.
     import stripe
     # Your secret key.
+    logger.info('request')
+    logger.info(request.vars)
     stripe.api_key = myconf.get('stripe.private_key')
-    token = json.loads(request.vars.transaction_token)
-    amount = float(request.vars.amount)
+    # token = json.loads(request.vars.transaction_token)
+    token = request.vars.transaction_token
+    logger.info(type(request.vars.amount))
+    #amount = float(request.vars.amount)
+    amount = request.vars.amount
     try:
         charge = stripe.Charge.create(
-            amount=int(amount * 100),
+            # amount=int(amount * 100),
+            amount=amount,
             currency="usd",
-            source=token['id'],
+            # source=token['id'],
+            source=token,
             description="Purchase",
         )
     except stripe.error.CardError as e:
         logger.info("The card has been declined.")
         logger.info("%r" % traceback.format_exc())
         return response.json(dict(result="nok"))
-    db.customer_order.insert(
-        customer_info=request.vars.customer_info,
-        transaction_token=json.dumps(token),
-        cart=request.vars.cart)
-    return response.json(dict(result="nok"))
+
+    # db.customer_order.insert(
+    #     customer_info=request.vars.customer_info,
+    #     transaction_token=json.dumps(token),
+    #     cart=request.vars.cart)
+    # return response.json(dict(result="nok"))
 
 
 # Normally here we would check that the user is an admin, and do programmatic

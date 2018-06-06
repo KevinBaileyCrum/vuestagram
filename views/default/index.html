@@ -208,24 +208,31 @@
           <!-- Put here the code to display the images -->
           <ul class="container">
             <!-- The following is an example -->
-            <li v-for="image in user_images" class="card lifted padded quarter">
+            <li v-for="image in user_images" class="lifted padded quarter">
               <img v-bind:src="image.image_url" height="200px" width="200px" class="padded"/>
               <!-- <span class="padded"> ${image.image_price} </span> -->
               
-              <button
-                  class = "padding-left: 10px btn.small"
-                  v-on:click = "edit_price(image)"
-              >
-                  ${image.image_price}
-              </button>
+              <div v-if="self_page">
+                    <button
+                        class = "padding-left: 10px btn.small"
+                        v-on:click = "edit_price(image)"
+                    >
+                        ${image.image_price}
+                    </button>
+              </div>
+              <div v-else class="padded">
+                  <h5>${image.image_price}</h5>
+              </div>
+
               <button 
-                  class = "btn.small" 
+                  class = "btn.small padded" 
                   v-on:click="cart_click(image)"
               >
                 <i class=" fa fa-shopping-cart"></i> 
               </button>
               <!-- <span v-if="image.is_checked"> -->
-                <i v-if="image.is_checked" class = "fa fa-check"></i>
+                <!-- <i v-if="image.is_checked" class = "fa fa-check"></i> -->
+                <i v-if="in_cart( image )" class="fa fa-check"></i>
               <!-- </span> -->
             </li> 
           </ul>

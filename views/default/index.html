@@ -3,6 +3,8 @@
 {{block head}}
 
 <script src="{{=URL('static', 'js/vue.js')}}"></script>
+<script src="https://checkout.stripe.com/checkout.js"></script>
+  
 <script>
   // Define your URLs here.
   var add_image_url        = "{{=URL('api', 'add_image', user_signature=True)}}";
@@ -11,16 +13,58 @@
   var get_users_url        = "{{=URL('api', 'get_users', user_signature=True)}}";
   var get_current_user_url = "{{=URL('api', 'get_current_user', user_signature=True)}}";
   var select_user_url      = "{{=URL('api', 'select_user', user_signature=True)}}";
+  var edit_price_url       = "{{=URL('api', 'edit_price', user_signature=True)}}";
+  var cart_click_url       = "{{=URL('api', 'cart_click', user_signature=True)}}";
+
+  var products_url = "{{=URL('default', 'get_products')}}";
+  var purchase_url = "{{=URL('default', 'purchase', hmac_key=session.hmac_key)}}"
 </script>
 
 
 {{end}}
 
 <div class="main_content">
-
   <div id="vue-div" class="display:none">
-    <!-- Your code goes here.  Remember to call $("#vue-div").show() once you get the data for the first time. -->
+   
+    <!-- is_checkout area for displaying cart -->
+    <div v-if="is_checkout">
+        <div v-if="cart.length == 0">
+            <p> your cart is empty </p>
+            <button class="btn.small blue" v-on:click="is_checkout = !is_checkout">
+                continue shopping
+            </button>
+        </div>
+        <div v-else>
+            <h1> Your cart </h2>
+            <div v-for="product in cart" class="quarter">
+                <div class="col-md-3 prod_image third">
+                    <img v-bind:src="product.image_url" width="100%" class="product_image"/>
+                </div>
+                <div class="col-md-10 product_info twothirds">
+                    <div class="product_quantity_price">
+                        <span class="product_price">image price $ <p5>${product.image_price}</p></span>
+                    </div>
+                    <div class="product_description">
+                        <p>${product.description}</p>
+                    </div>
+                </div>
+            </div>
+            <button class="btn.small green" v-on:click="pay()">
+                purchase items $ ${get_cart_total()}
+            </button>
+            <button class="btn.small blue"  v-on:click="is_checkout = !is_checkout">
+                continue shopping
+            </button>
+        </div>
+    </div>
 
+    <div v-else>  
+        <button class= "btn.small" v-on:click="is_checkout=!is_checkout">
+            checkout
+        </button>
+    </div>
+
+    <!-- Your code goes here.  Remember to call $("#vue-div").show() once you get the data for the first time. -->
     <div class="container padded">
 
       <div class="image_space threequarters">
@@ -28,7 +72,22 @@
         <div v-if="self_page">
           <!-- Code to upload files, with control buttons -->
           <div id="uploader_div" style="display:none">
-            Upload an image file: <input id="file_input" type="file" v-on:change="upload_file" accept="image/jpeg">
+            <!-- Upload an image file: <input id="file_input" type="file" v-on:change="upload_file" accept="image/jpeg"> -->
+    
+            <form action='#' v-on:submit="upload_file">
+                <div class="upl_form" id="form_img">
+                    Upload an image file: 
+                    <!-- <input id="file_input" type="file" v-on:change="upload_file" accept="image/jpeg"> -->
+                    <input id="file_input" type="file" accept="image/jpeg">
+                </div>
+                <div class="upl_form" id="form_prc">
+                    <input id="file_price" placeholder="Set Desired Price:" type="float" /> 
+                </div>
+                <div class="upl_form" id="form_sub">
+                    <input class="btn btn-primary" type="submit" value="Upload" />
+                </div>
+            </form>
+          
           </div>
 
           <button v-if="!is_uploading" v-on:click="open_uploader"><i class="fa fa-plus"></i></button>
@@ -37,11 +96,34 @@
 
         <div class="image_container">
           <!-- Put here the code to display the images -->
-
           <ul class="container">
             <!-- The following is an example -->
-            <li v-for="image in user_images" class="card lifted padded quarter">
+            <li v-for="image in user_images" class="lifted padded quarter">
               <img v-bind:src="image.image_url" height="200px" width="200px" class="padded"/>
+              <!-- <span class="padded"> ${image.image_price} </span> -->
+              
+              <div v-if="self_page">
+                    <button
+                        class = "padding-left: 10px btn.small"
+                        v-on:click = "edit_price(image)"
+                    >
+                        ${image.image_price}
+                    </button>
+              </div>
+              <div v-else class="padded">
+                  <h5>${image.image_price}</h5>
+              </div>
+
+              <button 
+                  class = "btn.small padded" 
+                  v-on:click="cart_click(image)"
+              >
+                <i class=" fa fa-shopping-cart"></i> 
+              </button>
+              <!-- <span v-if="image.is_checked"> -->
+                <!-- <i v-if="image.is_checked" class = "fa fa-check"></i> -->
+                <i v-if="in_cart( image )" class="fa fa-check"></i>
+              <!-- </span> -->
             </li> 
           </ul>
         </div>
@@ -57,7 +139,7 @@
                 <td v-on:click="select_user(curusr.user_id)"> ${curusr.first_name} ${curusr.last_name} </td>
             </tr>
             <tr v-for="usr in users" class="center">
-              <!-- This row is you; code for getting your own images, and for setting self_page -->
+              <!-- other users -->
               <td v-on:click="select_user(usr.user_id)"> ${usr.first_name} ${usr.last_name} </td>
             </tr>
           </tbody>
@@ -65,8 +147,7 @@
 
       </div>
 
-  </div>
-
+    </div>
 </div>
 
 <script src="{{=URL('static', 'js/default_index.js')}}"></script>

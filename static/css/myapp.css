@@ -3,8 +3,55 @@
   color: #bb8833;
 }
 
-/* line 5, ../sass/_main.scss */
-div.main_content {
+/* line 7, ../sass/_main.scss */
+div.main_content button:focus {
+  border-color: white;
+  outline: none;
+   padding: 20px;
+}
+/* line 12, ../sass/_main.scss */
+div.main_content input.search_input {
+  width: 80% !important;
+}
+/* line 15, ../sass/_main.scss */
+div.main_content div.product_description {
+  margin-top: 15px;
+}
+/* line 18, ../sass/_main.scss */
+div.main_content span.buy_buttons {
+  margin-left: 30px;
+}
+/* line 21, ../sass/_main.scss */
+div.main_content span.product_quantity {
+  margin-left: 30px;
+}
+/* line 24, ../sass/_main.scss */
+div.main_content span.product_price {
+  font-size: 140%;
+  font-weight: bold;
+}
+/* line 28, ../sass/_main.scss */
+div.main_content .product_image {
+  max-width: 300px;
+}
+/* line 31, ../sass/_main.scss */
+div.main_content .shopping_button {
+  margin-top: 10px;
+  margin-bottom: 10px;
+}
+/* line 35, ../sass/_main.scss */
+div.main_content .search_div {
+  margin-top: 10px;
+  margin-bottom: 10px;
+}
+/* line 39, ../sass/_main.scss */
+div.main_content .page_title {
+  font-size: 250%;
+}
+/* line 42, ../sass/_main.scss */
+div.main_content .total_price {
+  font-size: 150%;
+=======
   padding: 10px;
 }
 
@@ -107,4 +154,5 @@ div.table_footer span.pagine {
 div.table_footer span.pagine.disabled i.fa {
   color: #ddd;
   cursor: not-allowed;
+
 }

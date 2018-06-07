@@ -28,9 +28,7 @@ response.google_analytics_id = None
 # this is the main application menu add/remove items as required
 # ----------------------------------------------------------------------------------------------------------------------
 
-response.menu = [
-    (T('Home'), False, URL('default', 'index'), [])
-]
+response.menu = []
 
 DEVELOPMENT_MENU = True
 
@@ -49,7 +47,13 @@ def _():
     # useful links to internal and external resources
     # ------------------------------------------------------------------------------------------------------------------
     response.menu += [
+
+        (T('Shop'), False, URL('default', 'index')),
+        (T('Manage Products'), False, URL('default', 'product_management')),
+        (T('View Orders'), False, URL('default', 'view_orders')),
+
         (T('My Sites'), False, URL('admin', 'default', 'site')),
+
     ]
 
 
